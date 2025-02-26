@@ -27,18 +27,24 @@ else
     source venv/bin/activate       # MacOS/Linux
 fi
 
-echo "Installing Python dependencies..."
-pip3 install --upgrade pip
-pip3 install -r requirements.txt
+echo "Setting up pre-commit hooks..."
+pre-commit install
+
+# Frontend commands
+cd frontend
 
 echo "Installing Node.js dependencies..."
 npm install
 
-echo "Setting up pre-commit hooks..."
-pre-commit install
-
 echo "Running Prettier (Frontend Formatter)..."
 npm run format || echo "No JavaScript files to format."
+
+cd -
+
+# Backend commands
+echo "Installing Python dependencies..."
+pip3 install --upgrade pip
+pip3 install -r requirements.txt
 
 echo "Running Black (Python Formatter)..."
 black . || echo "No Python files to format."
