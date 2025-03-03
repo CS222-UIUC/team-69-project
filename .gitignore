@@ -3,3 +3,9 @@ venv/
 
 # Ignore node modules
 node_modules
+
+# don't include environment variables
+.env*
+
+# but allow examples
+!.env*.example
