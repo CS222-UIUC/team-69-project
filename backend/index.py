@@ -8,9 +8,15 @@ config = {
     **os.environ,
 }
 
-sql_script = ""
-with open("users.sql") as f:
-    sql_script = f.read()
+
+def read_sql_file(path):
+    sql_script = ""
+    with open(path) as f:
+        sql_script = f.read()
+    return sql_script
+
+
+create_user_tables_script = read_sql_file("users.sql")
 
 conn = psycopg2.connect(
     database=config["POSTGRES_DATABASE_NAME"],
@@ -21,7 +27,7 @@ conn = psycopg2.connect(
 )
 
 cursor = conn.cursor()
-cursor.execute(sql_script)
+cursor.execute(create_user_tables_script)
 conn.commit()
 
 cursor.close()
