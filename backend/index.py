@@ -17,6 +17,8 @@ def read_sql_file(path):
 
 
 create_user_tables_script = read_sql_file("users.sql")
+create_matches_script = read_sql_file("matches.sql")
+create_chat_script = read_sql_file("chat.sql")
 
 conn = psycopg2.connect(
     database=config["POSTGRES_DATABASE_NAME"],
@@ -28,6 +30,8 @@ conn = psycopg2.connect(
 
 cursor = conn.cursor()
 cursor.execute(create_user_tables_script)
+cursor.execute(create_matches_script)
+cursor.execute(create_chat_script)
 conn.commit()
 
 cursor.close()
