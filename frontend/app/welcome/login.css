@@ -1,0 +1,25 @@
+#background {
+    background-color: #BEE1E6;
+  }
+  
+#login_button {
+  background-color: #BEE1E6
+}
+
+#login_button:hover {
+  background-color: #006D77;
+}
+
+#google_button:hover {
+  background-color: #006D77;
+}
+
+#link:hover {
+  color: #006D77;
+}
+
+#checkbox {
+  color: #006D77;
+}
+
+  

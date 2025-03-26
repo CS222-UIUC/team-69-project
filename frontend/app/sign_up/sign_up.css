@@ -2,11 +2,15 @@
     background-color: #BEE1E6;
   }
   
-#login_button {
+#signup_button {
   background-color: #BEE1E6
 }
 
-#login_button:hover {
+#signup_button:hover {
+  background-color: #006D77;
+}
+
+#google_button:hover {
   background-color: #006D77;
 }
 
@@ -17,4 +21,5 @@
 #checkbox {
   color: #006D77;
 }
+
   
