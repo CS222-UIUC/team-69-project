@@ -51,6 +51,7 @@ def random_timestamps(n):
 
 def generate_users(n):
     users = []
+    shared_classes = random.sample(uiuc_classes, k=6)  # Add overlap between users
     for _ in range(n):
         display_name = fake.name()
         email = fake.email()
@@ -58,13 +59,30 @@ def generate_users(n):
         rating = round(random.uniform(0, 5), 2)
         total_ratings = random.randint(0, 100) if rating > 0 else 0
         rating_history = (
-            [random.randint(1, 5) for _ in range(min(50, total_ratings))]
+            [
+                random.choices([4, 5, 3], weights=[0.4, 0.5, 0.1])[0]
+                for _ in range(min(50, total_ratings))
+            ]
             if total_ratings > 0
             else []
         )
+
         show_as_backup = random.choice([True, False])
-        classes_can_tutor = random.sample(uiuc_classes, random.randint(0, 4))
-        classes_needed = random.sample(uiuc_classes, random.randint(0, 4))
+        max_classes = 4
+
+        # Ensure total does not exceed 4 and uses shared pool for overlap
+        num_shared_tutor = random.randint(1, min(len(shared_classes), max_classes))
+        num_personal_tutor = random.randint(0, max_classes - num_shared_tutor)
+        classes_can_tutor = random.sample(shared_classes, num_shared_tutor) + random.sample(
+            list(set(uiuc_classes) - set(shared_classes)), num_personal_tutor
+        )
+
+        num_shared_needed = random.randint(1, min(len(shared_classes), max_classes))
+        num_personal_needed = random.randint(0, max_classes - num_shared_needed)
+        classes_needed = random.sample(shared_classes, num_shared_needed) + random.sample(
+            list(set(uiuc_classes) - set(shared_classes)), num_personal_needed
+        )
+
         recent_interactions = random_timestamps(min(10, total_ratings))
 
         users.append(
@@ -84,7 +102,7 @@ def generate_users(n):
     return users
 
 
-def insert_users(users):
+def insert_users(users, cursor, conn):
     for user in users:
         cursor.execute(
             """
@@ -94,6 +112,7 @@ def insert_users(users):
             user,
         )
     conn.commit()
+
 
 
 if __name__ == "__main__":  # this file can be ran or used as a library
@@ -112,7 +131,7 @@ if __name__ == "__main__":  # this file can be ran or used as a library
     )
     cursor = conn.cursor()
 
-    users = generate_users(20)
+    users = generate_users(200)
     print(users)
     insert_users(users)
 
