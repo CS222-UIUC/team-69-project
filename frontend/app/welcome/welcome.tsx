@@ -5,7 +5,7 @@ export function Welcome() {
   return (
     <body className="bg-gray-100">
       <nav className="flex justify-between items-center px-8 py-4 bg-white shadow-md">
-        <img src="C:\Users\cooly\team-69-project\frontend\app\welcome\logo.png" />
+        <img src={logo} className="w-32" />
         <ul className="flex space-x-6 text-gray-700">
           <li>
             <a href="#" id="link">
@@ -98,9 +98,9 @@ export function Welcome() {
 
             <div className="text-center my-4 text-gray-500">OR</div>
 
-            <button className="w-full flex items-center justify-center border py-2 rounded-lg hover:bg-gray-100">
+            <button className="w-full flex items-center justify-center border py-2 rounded-lg hover:bg-gray-100 text-black">
               <img
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png"
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/512px-Google_%22G%22_logo.svg.png"
                 alt="Google Logo"
                 className="w-5 h-5 mr-2"
               />
