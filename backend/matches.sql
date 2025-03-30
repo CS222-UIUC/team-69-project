@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS matches (
   requester_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   matched_user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   match_score DECIMAL(5, 3),
-  matched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  UNIQUE (requester_id, matched_user_id)
 );
 
 

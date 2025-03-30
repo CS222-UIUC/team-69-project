@@ -1,10 +1,7 @@
 import psycopg2
-from dotenv import dotenv_values
-import os
 from datetime import datetime
-import ast
 
-# Helper class to represent a user from the DB
+# Represents a user pulled from DB
 class User:
     def __init__(
             self,
@@ -31,28 +28,31 @@ class User:
         self.recent_interactions = recent_interactions
 
     def get_activity_score(self, current_time):
+        # No activity? Still gets some credit
         if not self.recent_interactions:
             return 0.5
         last_interaction = max(self.recent_interactions)
         days_since_last = (current_time - last_interaction).days
-        return max(0.5, 1 - (days_since_last / 30))
+        # Activity fades with time
+        return max(0.5, 0.95 ** days_since_last)
 
     def get_penalty_multiplier(self):
+        # Not enough ratings? Big penalty
         if self.total_ratings < 5:
             return 0.7
         elif self.rating < 2.0:
-            return 0.1
+            return 0.1  # yikes
         elif self.rating < 3.0:
             return 0.4
         elif self.rating < 4.0:
             return 0.8
-        return 1.0
+        return 1.0  # doing great
 
-
+# Converts Postgres array to Python list
 def parse_pg_array(pg_array):
     return pg_array or []
 
-
+# Pulls all users from the database
 def fetch_users_from_db(cursor):
     cursor.execute("SELECT * FROM users;")
     rows = cursor.fetchall()
@@ -70,78 +70,105 @@ def fetch_users_from_db(cursor):
             classes_needed=parse_pg_array(row[9]),
             recent_interactions=parse_pg_array(row[10]),
         )
-        # Convert datetime strings to datetime objects
+        # Convert string timestamps to datetime objects
         user.recent_interactions = [
-            datetime.strptime(ts, "%Y-%m-%d %H:%M:%S.%f")
-            if isinstance(ts, str)
-            else ts
+            datetime.strptime(ts, "%Y-%m-%d %H:%M:%S.%f") if isinstance(ts, str) else ts
             for ts in user.recent_interactions
         ]
         users.append(user)
     return users
 
+# Calculates match tier and score
+def match_score(user, current_user, current_time):
+    base_rating = user.rating
+    penalty = user.get_penalty_multiplier()
+    activity = user.get_activity_score(current_time)
 
-def print_user_profile(user):
-    print(f"\n Requesting User Profile: {user.display_name}\n")
-    print(f"→ ID: {user.user_id}")
-    print(f"→ Major: {user.major}")
-    print(f"→ Rating: {user.rating:.2f}")
-    print(f"→ Total Ratings: {user.total_ratings}")
-    print(f"→ Penalty Multiplier: {user.get_penalty_multiplier():.2f}")
-    print(f"→ Activity Score: {user.get_activity_score(datetime.now()):.2f}")
-    print(f"→ Can Tutor: {', '.join(user.classes_can_tutor)}")
-    print(f"→ Needs Help In: {', '.join(user.classes_needed)}")
-    print(f"→ Recent Interactions: {len(user.recent_interactions)} recorded")
+    tutor_overlap = len(set(user.classes_can_tutor) & set(current_user.classes_needed))
+    request_overlap = len(set(user.classes_needed) & set(current_user.classes_can_tutor))
 
+    tutor_boost = 1 + min(tutor_overlap * 0.07, 0.25)  # small bump for class overlap
+    request_penalty = 1 - min(request_overlap * 0.05, 0.25)  # don't compete for same tutors
+    major_boost = 1.10 if user.major == current_user.major else 1.00
 
+    composite_score = base_rating * penalty * activity * tutor_boost * request_penalty * major_boost
+
+    # Tier logic – because labels matter
+    if base_rating >= 4.0 and user.major == current_user.major:
+        tier = 0
+    elif base_rating >= 4.0:
+        tier = 1
+    else:
+        tier = 2
+
+    return tier, -composite_score  # negative for descending sort
+
+# Match all students in match_requests
 def match_all_requests(cursor, conn, progress_callback=None):
     all_users = fetch_users_from_db(cursor)
-
     cursor.execute("SELECT student_id FROM match_requests;")
     requests = cursor.fetchall()
 
     for i, (student_id,) in enumerate(requests, start=1):
+        # Get the student who made the request
         current_user = next((u for u in all_users if u.user_id == student_id), None)
         if not current_user:
-            continue
+            continue  # skip if user not found
 
-        top_matches = []
-        for subject in current_user.classes_needed:
-            matches = find_matches(current_user, all_users, subject, datetime.now())
-            for match in matches:
-                score, _ = get_match_score_and_tier(match, current_user)
-                top_matches.append((match.user_id, score))
+        match_scores = []
+        for other_user in all_users:
+            if other_user.user_id == current_user.user_id:
+                continue  # don't match with self
+            if not (set(other_user.classes_can_tutor) & set(current_user.classes_needed)):
+                continue  # no tutoring match
+            if not (set(current_user.classes_can_tutor) & set(other_user.classes_needed)):
+                continue  # no reciprocal need
 
-        match_dict = {}
-        for user_id, score in top_matches:
-            if user_id not in match_dict or score > match_dict[user_id]:
-                match_dict[user_id] = score
+            score, _ = get_match_score_and_tier(other_user, current_user)
+            match_scores.append((other_user.user_id, score))
 
-        top_10 = sorted(match_dict.items(), key=lambda x: -x[1])[:10]
+        # Pick top 10 based on match score
+        top_10 = sorted(match_scores, key=lambda x: -x[1])[:10]
 
         for matched_user_id, score in top_10:
+            # Check for existing match to avoid duplicates
             cursor.execute(
                 """
-                INSERT INTO matches (requester_id, matched_user_id, match_score)
-                VALUES (%s, %s, %s);
+                SELECT 1 FROM matches
+                WHERE requester_id = %s AND matched_user_id = %s;
                 """,
-                (student_id, matched_user_id, score)
+                (student_id, matched_user_id)
             )
+            if cursor.fetchone() is None:
+                # Insert new match record
+                cursor.execute(
+                    """
+                    INSERT INTO matches (requester_id, matched_user_id, match_score)
+                    VALUES (%s, %s, %s);
+                    """,
+                    (student_id, matched_user_id, score)
+                )
 
         if progress_callback:
-            progress_callback(i)
+            progress_callback(i)  # optional: report progress
 
-    conn.commit()
+    conn.commit()  # save all changes
 
-
-
-
+# Score with tier labels for clarity
 def get_match_score_and_tier(user, current_user):
     base_rating = user.rating
     penalty = user.get_penalty_multiplier()
     activity = user.get_activity_score(datetime.now())
-    score = round(base_rating * penalty * activity, 3)
 
+    tutor_overlap = len(set(user.classes_can_tutor) & set(current_user.classes_needed))
+    request_overlap = len(set(user.classes_needed) & set(current_user.classes_can_tutor))
+    tutor_boost = 1 + min(tutor_overlap * 0.07, 0.25)
+    request_penalty = 1 - min(request_overlap * 0.05, 0.25)
+    major_boost = 1.10 if user.major == current_user.major else 1.00
+
+    score = round(base_rating * penalty * activity * tutor_boost * request_penalty * major_boost, 3)
+
+    # Tier naming logic – makes it more readable
     if base_rating >= 4.0 and user.major == current_user.major:
         tier = "Tier 1: High Rating + Major Match"
     elif base_rating >= 4.0:
@@ -150,44 +177,3 @@ def get_match_score_and_tier(user, current_user):
         tier = "Tier 3: Lower Rating (Penalized)"
 
     return score, tier
-
-
-def find_matches(current_user, all_users, target_class, current_time):
-    candidates = [
-        user for user in all_users
-        if target_class in user.classes_needed
-           and any(cls in current_user.classes_can_tutor for cls in user.classes_needed)
-           and user.user_id != current_user.user_id
-    ]
-
-    def match_score(user):
-        base_rating = user.rating
-        penalty = user.get_penalty_multiplier()
-        activity = user.get_activity_score(current_time)
-        composite_score = base_rating * penalty * activity
-
-        if base_rating >= 4.0 and user.major == current_user.major:
-            tier = 0
-        elif base_rating >= 4.0:
-            tier = 1
-        else:
-            tier = 2
-
-        return (tier, -composite_score)  # Tier first, score second
-
-    candidates.sort(key=match_score)
-
-    if not candidates:
-        backups = [
-            user for user in all_users
-            if target_class in user.classes_can_tutor
-               and user.show_as_backup
-               and user.rating >= 3.0
-               and user.get_activity_score(current_time) >= 0.7
-               and user.user_id != current_user.user_id
-        ]
-
-        backups.sort(key=match_score)
-        return backups[:10]
-
-    return candidates[:10]
