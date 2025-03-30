@@ -130,10 +130,6 @@ export function Welcome() {
           </a>
         </div>
       </footer>
-      <script>
-        const passwordInput = document.getElementById('password'); const
-        togglePasswordButton = document.getElementById('toggle-password');
-      </script>
     </body>
   );
 }
