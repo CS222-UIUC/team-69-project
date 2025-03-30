@@ -1,4 +1,4 @@
-name: Auto Format
+name: Check Formatting
 
 on: [push, pull_request]
 
@@ -20,12 +20,4 @@ jobs:
 
       - name: Run Prettier
         working-directory: ./frontend
-        run: npm run format
-
-      - name: Commit Changes
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions@users.noreply.github.com'
-          git add .
-          git commit -m "Auto-formatting by GitHub Actions" || echo "No changes to commit"
-          git push
+        run: npm run check-format
