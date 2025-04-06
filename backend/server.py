@@ -29,6 +29,24 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.session_protection = "strong"
 
+def get_user(id):
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users WHERE id = %s", id)
+    found_user = cursor.fetchone()
+    if not found_user:
+        return None
+    
+    return found_user
+
+@login_manager.user_loader
+def user_loader(id: int):
+    user = get_user(id)
+    if user: # check if user exists in db
+        user_model = User()
+        user_model.id = id
+        return user_model
+    return None
+
 signup_schema = zon.record(
     {
         "display_name": zon.string(),
@@ -88,6 +106,7 @@ def login():
     cursor = conn.cursor()
     cursor.execute("SELECT id, display_name, email, password_hash FROM users WHERE email = %s", (validated_data['email'],))
     found_user = cursor.fetchone()
+    cursor.close()
 
     if not found_user:
         abort(401, "Invalid username or password.")
@@ -102,7 +121,6 @@ def login():
     user_object = User()
     user_object.id = id
     
-    login_user(user_object)
     login_user(user_object)
 
     return jsonify( {
