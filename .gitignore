@@ -3,5 +3,7 @@ venv/
 
 # Ignore node modules
 node_modules
+__pycache__
+.pytest_cache
 
 .env*

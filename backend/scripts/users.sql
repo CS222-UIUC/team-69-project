@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS users (
   classes_can_tutor TEXT[] DEFAULT '{}',
   classes_needed TEXT[] DEFAULT '{}',
   recent_interactions TIMESTAMP[], -- last 10 interaction timestamps
-  class_ratings JSONB DEFAULT '{}'
+
+  password_hash VARCHAR(64)
 );
 
 CREATE TABLE IF NOT EXISTS oauth_users (
