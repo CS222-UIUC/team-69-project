@@ -4,8 +4,10 @@ import psycopg2
 import os
 import zon
 import bcrypt
+from flask_login import login_user, UserMixin, LoginManager
 
 app = Flask(__name__)
+app.secret_key = os.urandom(32)
 
 config = {
     **dotenv_values(".env"),
@@ -19,6 +21,13 @@ conn = psycopg2.connect(
     password=config["POSTGRES_DATABASE_PASSWORD"],
     port=config["POSTGRES_DATABASE_PORT"],
 )
+
+class User(UserMixin):
+    ...
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.session_protection = "strong"
 
 signup_schema = zon.record(
     {
@@ -54,13 +63,16 @@ def signup():
     new_user_id = cursor.fetchone()[0]
     cursor.close()
 
-    return jsonify(
-        {
-            "id": new_user_id,
-            "display_name": validated_data["display_name"],
-            "email": validated_data["email"],
-        }
-    )
+    user_object = User()
+    user_object.id = new_user_id
+
+    login_user(user_object)
+
+    return jsonify({
+        "id": new_user_id,
+        "display_name": validated_data["display_name"],
+        "email": validated_data["email"],
+    })
 
 login_schema = zon.record(
     {
@@ -87,13 +99,17 @@ def login():
     if not bcrypt.checkpw(password_bytes, hashed_password):
         abort(401, "Invalid username or password.")
 
-    return jsonify({
+    user_object = User()
+    user_object.id = id
+    
+    login_user(user_object)
+    login_user(user_object)
+
+    return jsonify( {
         "id": id,
         "display_name": display_name,
         "email": email
     })
-
-
 
 if __name__ == "__main__":
     app.run(debug=True)
