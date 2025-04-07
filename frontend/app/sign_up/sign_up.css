@@ -1,25 +1,23 @@
 #background {
-    background-color: #BEE1E6;
-  }
-  
+  background-color: #bee1e6;
+}
+
 #signup_button {
-  background-color: #BEE1E6
+  background-color: #bee1e6;
 }
 
 #signup_button:hover {
-  background-color: #006D77;
+  background-color: #006d77;
 }
 
 #google_button:hover {
-  background-color: #006D77;
+  background-color: #006d77;
 }
 
 #link:hover {
-  color: #006D77;
+  color: #006d77;
 }
 
 #checkbox {
-  color: #006D77;
+  color: #006d77;
 }
-
-  
