@@ -70,14 +70,14 @@ def generate_users(n):
         show_as_backup = random.choice([True, False])
         max_classes = 4
 
-        # Generate disjoint class lists
-        num_shared_tutor = random.randint(1, min(len(shared_classes), max_classes))
-        num_personal_tutor = random.randint(0, max_classes - num_shared_tutor)
+        # Generate disjoint class lists to generate classes_can_tutor
+        num_shared_tutor = random.randint(1, min(len(shared_classes), max_classes)) #num of shared classes the user can tutor
+        num_personal_tutor = random.randint(0, max_classes - num_shared_tutor) #num of personal classes the user can tutor
         classes_can_tutor = random.sample(shared_classes, num_shared_tutor) + random.sample(
             list(set(uiuc_classes) - set(shared_classes)), num_personal_tutor
         )
 
-        # Remove tutor classes to enforce disjoint
+        # Remove tutor classes to enforce disjoint and generate classes_needed
         excluded = set(classes_can_tutor)
         remaining_shared = list(set(shared_classes) - excluded)
         remaining_personal = list(set(uiuc_classes) - excluded)
@@ -104,6 +104,10 @@ def generate_users(n):
 
         recent_interactions = random_timestamps(min(10, total_ratings))
 
+        class_ratings = {
+            class_name: round(random.uniform(2.5, 5.0), 2) for class_name in classes_can_tutor
+        }
+
         users.append((
             display_name,
             email,
@@ -115,6 +119,7 @@ def generate_users(n):
             classes_can_tutor,
             classes_needed,
             recent_interactions,
+            class_ratings
         ))
 
         print(f"\rGenerating users... ({len(users)}/{n})", end="")
@@ -130,8 +135,8 @@ def insert_users(users, cursor, conn):
     for user in users:
         cursor.execute(
             """
-            INSERT INTO users (display_name, email, major, rating, total_ratings, rating_history, show_as_backup, classes_can_tutor, classes_needed, recent_interactions)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+            INSERT INTO users (display_name, email, major, rating, total_ratings, rating_history, show_as_backup, classes_can_tutor, classes_needed, recent_interactions, class_ratings)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
             """,
             user,
         )
