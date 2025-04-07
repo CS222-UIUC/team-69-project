@@ -4,3 +4,10 @@ pytest
 pre-commit
 python-dotenv
 psycopg2
+bcrypt
+pytest-order
+pytest-dependency
+zon
+flask-login
+oauthlib
+requests

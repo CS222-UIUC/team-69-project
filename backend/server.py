@@ -74,7 +74,7 @@ def callback():  # https://realpython.com/flask-google-login/
     userinfo_response = requests.get(uri, headers=headers, data=body)
 
     if userinfo_response.json().get("email_verified"):
-        return None  # temp needs testing
+        return None  # temp needs testing later
 
     return "Failed to authenticate user.", 400
 
