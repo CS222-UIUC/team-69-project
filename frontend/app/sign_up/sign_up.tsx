@@ -1,15 +1,17 @@
 import './sign_up.css';
+import logo from '../welcome/logo.png';
+import { Link } from 'react-router';
 
-export function Signup() {
+export default function Signup() {
   return (
     <body className="bg-gray-100">
       <nav className="flex justify-between items-center px-8 py-4 bg-white shadow-md">
-        <img src="./logo.png" className="-mr-50" />
-        <ul className="flex space-x-6 text-gray-700 -ml-50">
+        <img src={logo} className="w-32" />
+        <ul className="flex space-x-6 text-gray-700">
           <li>
-            <a href="#" id="link">
+            <Link to="/" id="link">
               Home
-            </a>
+            </Link>
           </li>
           <li>
             <a href="#" id="link">
@@ -36,13 +38,13 @@ export function Signup() {
           <a href="#" id="link" className="text-gray-700 mr-4 ">
             Sign Up
           </a>
-          <a
-            href="#"
-            id="signup_button"
-            className="text-black px-4 py-2 rounded-sm"
+          <Link
+            to="/login"
+            id="login_button"
+            className="text-black px-4 py-2 rounded-lg"
           >
             Login
-          </a>
+          </Link>
         </div>
       </nav>
 
@@ -116,23 +118,20 @@ export function Signup() {
 
             <div className="text-center my-4 text-gray-500">OR</div>
 
-            <button
-              id="google_button"
-              className="bg-gray-100 w-full flex items-center justify-center py-2 rounded-lg hover:bg-gray-100"
-            >
+            <button className="w-full flex items-center justify-center border py-2 rounded-lg hover:bg-gray-100 text-black">
               <img
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png"
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/512px-Google_%22G%22_logo.svg.png"
                 alt="Google Logo"
                 className="w-5 h-5 mr-2"
               />
-              Sign Up with Google
+              Login with Google
             </button>
 
             <p className="text-center text-sm text-gray-600 mt-4">
               Already have an account?{' '}
-              <a href="#" id="link" className=" hover:underline">
+              <Link to="/login" id="link" className=" hover:underline">
                 Login
-              </a>
+              </Link>
             </p>
           </form>
         </div>

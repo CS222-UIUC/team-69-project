@@ -1,0 +1,126 @@
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: #f8f9fa;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+  header nav a {
+    margin: 0 1rem;
+    text-decoration: none;
+    color: #333;
+  }
+  .btn {
+    background: white;
+    color: #006d77;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .btn:hover {
+    background-color: #006d77;
+    color: white;
+  }
+  .hero {
+    background: #bee1e6;
+    padding: 4rem 2rem;
+    text-align: center;
+  }
+  .hero img {
+    width: 500px;
+  }
+  .hero h1 {
+    font-size: 4rem;
+    margin: 0 0;
+    color: #006d77
+  }
+  .section {
+    padding: 4rem 2rem;
+  }
+  .how-it-works {
+    position: relative;
+    background: #f3f4f6;
+    text-align: center;
+    display: inline-block;
+  }
+  .how-it-works img{
+    width: 60%;
+    height: auto;
+    display: block;
+  }
+  .arrow-link {
+    position: absolute;
+    width: 2.5%; /* Adjust to size of arrow */
+    aspect-ratio: 1/1;
+    z-index: 2;
+    cursor: pointer;
+    border-radius: 10%;
+  }
+  .arrow-link:hover {
+    background-color: #006d77;
+  }
+  .arrow1 {
+    top: 27.6%;
+    right: 52%;
+  }
+  
+  .arrow2 {
+    top: 57.15%;
+    right: 22.35%;
+  }
+  
+  .arrow3 {
+    top: 91.9%;
+    right: 52.1%;
+  }
+  .step {
+    margin-bottom: 2rem;
+  }
+  .sneak-peek {
+    background: #bee1e6;
+    text-align: left;
+  }
+  .sneak-peek h2 {
+    font-size: 2rem;
+    font-weight: 600;
+  }
+  .profiles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    justify-content: center;
+    text-align: center;
+  }
+  .profile-card {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    width: 200px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .profile-card h4 {
+    margin: 0.5rem 0;
+  }
+  .search-section {
+    padding: 2rem;
+    text-align: center;
+  }
+  .search-bar {
+    padding: 0.5rem;
+    width: 200px;
+    margin-right: 1rem;
+  }
+  footer {
+    background: #f1f1f1;
+    padding: 2rem;
+    text-align: center;
+    font-size: 0.8rem;
+  }
+  
