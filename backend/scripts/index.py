@@ -30,8 +30,8 @@ conn = psycopg2.connect(
 
 cursor = conn.cursor()
 cursor.execute(create_user_tables_script)
-cursor.execute(create_matches_script)
-cursor.execute(create_chat_script)
+# cursor.execute(create_matches_script)
+# cursor.execute(create_chat_script)
 conn.commit()
 
 cursor.close()
