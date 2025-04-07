@@ -92,9 +92,10 @@ def fetch_users_from_db(cursor):
 
 # Calculates match tier and score
 #def match_score(user, current_user, current_time):
-   #base_rating = user.rating
-    #penalty = user.get_penalty_multiplier()
-    #activity = user.get_activity_score(current_time)
+
+    # base_rating = user.rating
+    # penalty = user.get_penalty_multiplier()
+    # activity = user.get_activity_score(current_time)
 
     #tutor_overlap = len(set(user.classes_can_tutor) & set(current_user.classes_needed))
     #request_overlap = len(set(user.classes_needed) & set(current_user.classes_can_tutor))
