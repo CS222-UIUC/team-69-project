@@ -15,6 +15,7 @@ class User:
             classes_can_tutor,
             classes_needed,
             recent_interactions,
+            class_ratings,
     ):
         self.user_id = user_id
         self.display_name = display_name
@@ -26,6 +27,7 @@ class User:
         self.classes_can_tutor = classes_can_tutor
         self.classes_needed = classes_needed
         self.recent_interactions = recent_interactions
+        self.class_ratings = class_ratings
 
     def get_activity_score(self, current_time):
         # No activity? Still gets some credit
@@ -47,10 +49,19 @@ class User:
         elif self.rating < 4.0:
             return 0.8
         return 1.0  # doing great
+    
+    def add_class_rating(self, class_name, rating):
+        self.class_ratings[class_name] = rating
+
+    def get_class_rating(self, class_name):
+        return self.class_ratings.get(class_name, self.rating)
 
 # Converts Postgres array to Python list
 def parse_pg_array(pg_array):
     return pg_array or []
+
+def parse_pg_dict(pg_dict):
+    return pg_dict or {}
 
 # Pulls all users from the database
 def fetch_users_from_db(cursor):
@@ -69,6 +80,7 @@ def fetch_users_from_db(cursor):
             classes_can_tutor=parse_pg_array(row[8]),
             classes_needed=parse_pg_array(row[9]),
             recent_interactions=parse_pg_array(row[10]),
+            class_ratings=parse_pg_dict(row[11]),#
         )
         # Convert string timestamps to datetime objects
         user.recent_interactions = [
@@ -79,29 +91,29 @@ def fetch_users_from_db(cursor):
     return users
 
 # Calculates match tier and score
-def match_score(user, current_user, current_time):
-    base_rating = user.rating
-    penalty = user.get_penalty_multiplier()
-    activity = user.get_activity_score(current_time)
+#def match_score(user, current_user, current_time):
+   #base_rating = user.rating
+    #penalty = user.get_penalty_multiplier()
+    #activity = user.get_activity_score(current_time)
 
-    tutor_overlap = len(set(user.classes_can_tutor) & set(current_user.classes_needed))
-    request_overlap = len(set(user.classes_needed) & set(current_user.classes_can_tutor))
+    #tutor_overlap = len(set(user.classes_can_tutor) & set(current_user.classes_needed))
+    #request_overlap = len(set(user.classes_needed) & set(current_user.classes_can_tutor))
 
-    tutor_boost = 1 + min(tutor_overlap * 0.07, 0.25)  # small bump for class overlap
-    request_penalty = 1 - min(request_overlap * 0.05, 0.25)  # don't compete for same tutors
-    major_boost = 1.10 if user.major == current_user.major else 1.00
+    #tutor_boost = 1 + min(tutor_overlap * 0.07, 0.25)  # small bump for class overlap
+    #request_penalty = 1 - min(request_overlap * 0.05, 0.25)  # don't compete for same tutors
+    #major_boost = 1.10 if user.major == current_user.major else 1.00
 
-    composite_score = base_rating * penalty * activity * tutor_boost * request_penalty * major_boost
+    #composite_score = base_rating * penalty * activity * tutor_boost * request_penalty * major_boost
 
     # Tier logic – because labels matter
-    if base_rating >= 4.0 and user.major == current_user.major:
-        tier = 0
-    elif base_rating >= 4.0:
-        tier = 1
-    else:
-        tier = 2
+    #if base_rating >= 4.0 and user.major == current_user.major:
+    #    tier = 0
+    #elif base_rating >= 4.0:
+    #    tier = 1
+    #else:
+    #    tier = 2
 
-    return tier, -composite_score  # negative for descending sort
+    #return tier, -composite_score  # negative for descending sort
 
 # Match all students in match_requests
 def match_all_requests(cursor, conn, progress_callback=None):
@@ -116,13 +128,16 @@ def match_all_requests(cursor, conn, progress_callback=None):
             continue  # skip if user not found
 
         match_scores = []
+        
         for other_user in all_users:
+            request_overlap = len(set(other_user.classes_needed) & set(current_user.classes_can_tutor))
             if other_user.user_id == current_user.user_id:
-                continue  # don't match with self
+                continue  # don't match with self, don't match with one-sided tutor when they said no
             if not (set(other_user.classes_can_tutor) & set(current_user.classes_needed)):
                 continue  # no tutoring match
-            if not (set(current_user.classes_can_tutor) & set(other_user.classes_needed)):
-                continue  # no reciprocal need
+            if not (set(current_user.classes_can_tutor) & set(other_user.classes_needed)) and not(other_user.show_as_backup):
+                continue  # no reciprocal need and other_user said no for one-sided tutoring
+
 
             score, _ = get_match_score_and_tier(other_user, current_user)
             match_scores.append((other_user.user_id, score))
@@ -166,12 +181,22 @@ def get_match_score_and_tier(user, current_user):
     request_penalty = 1 - min(request_overlap * 0.05, 0.25)
     major_boost = 1.10 if user.major == current_user.major else 1.00
 
-    score = round(base_rating * penalty * activity * tutor_boost * request_penalty * major_boost, 3)
+    class_specific_rating = 0
+    for class_name in current_user.classes_needed:
+        if class_name in user.classes_can_tutor:
+            class_specific_rating = user.get_class_rating(class_name)
+            break
+
+    # If class-specific rating is found, prioritize it
+    if class_specific_rating > 0:
+        rating = 0.7 * class_specific_rating + 0.3 * base_rating
+
+    score = round(rating * penalty * activity * tutor_boost * request_penalty * major_boost, 3)
 
     # Tier naming logic – makes it more readable
-    if base_rating >= 4.0 and user.major == current_user.major:
+    if rating >= 4.0 and user.major == current_user.major:
         tier = "Tier 1: High Rating + Major Match"
-    elif base_rating >= 4.0:
+    elif rating >= 4.0:
         tier = "Tier 2: High Rating + Major Mismatch"
     else:
         tier = "Tier 3: Lower Rating (Penalized)"
