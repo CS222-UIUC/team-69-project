@@ -1,10 +1,48 @@
 import './sign_up.css';
+import logo from '../assets/logo.png';
+import { z } from 'zod';
+
+const signupSchema = z.object({
+  display_name: z.string(),
+  email: z.string().max(255),
+  password: z.string().max(72),
+});
+
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+
+  const formData = new FormData(e.currentTarget);
+  const data = Object.fromEntries(formData);
+
+  const { success, data: verifiedData } = signupSchema.safeParse(data);
+  if (!success) {
+    return alert('Signup information is incorrect.');
+  }
+
+  if (!verifiedData.email.endsWith('@illinois.edu')) {
+    return alert('You must use an illinois.edu email to signup');
+  }
+
+  const response = await fetch(`${import.meta.env.VITE_API_BASE}/signup`, {
+    method: 'POST',
+    body: JSON.stringify(verifiedData),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (response.status !== 200) {
+    return alert('Failed to signup.');
+  }
+  console.log(await response.json());
+
+  window.location.href = '/';
+};
 
 export function Signup() {
   return (
-    <body className="bg-gray-100">
+    <div className="bg-gray-100">
       <nav className="flex justify-between items-center px-8 py-4 bg-white shadow-md">
-        <img src="./logo.png" className="-mr-50" />
+        <img src={logo} className="w-32" />
         <ul className="flex space-x-6 text-gray-700 -ml-50">
           <li>
             <a href="#" id="link">
@@ -36,11 +74,7 @@ export function Signup() {
           <a href="#" id="link" className="text-gray-700 mr-4 ">
             Sign Up
           </a>
-          <a
-            href="#"
-            id="signup_button"
-            className="text-black px-4 py-2 rounded-sm"
-          >
+          <a href="#" className="text-black px-4 py-2 rounded-sm">
             Login
           </a>
         </div>
@@ -48,19 +82,22 @@ export function Signup() {
 
       <div className="bg-gray-100 flex justify-center items-center h-screen">
         <div className="bg-white shadow-lg rounded-lg p-8 w-96">
-          <h2 className="text-2xl font-bold text-center mb-2">Sign Up</h2>
+          <h2 className="text-2xl font-bold text-center mb-2 text-gray-500">
+            Sign Up
+          </h2>
           <p className="text-gray-500 text-center mb-6">
             Create an account to unlock exclusive features.
           </p>
 
-          <form>
+          <form className="text-black" onSubmit={handleSubmit}>
             <label className="block mb-2 text-gray-700">
               <b>Full Name</b>
             </label>
             <input
               type="name"
               placeholder="Enter your Name"
-              className="bg-gray-100 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 mb-4"
+              name="display_name"
+              className="bg-gray-100 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2 mb-"
             />
 
             <label className="block mb-2 text-gray-700">
@@ -68,6 +105,7 @@ export function Signup() {
             </label>
             <input
               type="email"
+              name="email"
               placeholder="Enter your Email"
               className="bg-gray-100 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2"
             />
@@ -77,6 +115,7 @@ export function Signup() {
             </label>
             <input
               type="password"
+              name="password"
               placeholder="Enter your Password"
               className="bg-gray-100 w-full px-3 py-2 rounded-lg focus:outline-none focus:ring-2"
             />
@@ -109,6 +148,7 @@ export function Signup() {
 
             <button
               id="signup_button"
+              type="submit"
               className="w-full mt-4 bg-blue-500 text-black py-2 rounded-lg hover:bg-primary"
             >
               Sign Up
@@ -137,6 +177,6 @@ export function Signup() {
           </form>
         </div>
       </div>
-    </body>
+    </div>
   );
 }

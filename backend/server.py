@@ -1,13 +1,11 @@
 import json
 from flask import Flask, redirect, request, jsonify, abort
 from dotenv import dotenv_values
-import psycopg2
 import os
-import zon
-import bcrypt
 from flask_login import login_user, UserMixin, LoginManager
 from oauthlib.oauth2 import WebApplicationClient
 import requests
+from flask_cors import CORS
 
 from models.user import User
 from routes.login import login_bp
@@ -18,6 +16,7 @@ app = Flask(__name__)
 app.secret_key = os.urandom(32)
 app.register_blueprint(login_bp)
 app.register_blueprint(signup_bp)
+CORS(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)

@@ -11,3 +11,4 @@ zon
 flask-login
 oauthlib
 requests
+flask-cors
