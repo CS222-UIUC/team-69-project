@@ -17,6 +17,12 @@ def print_user_profile(user):
     print(f"→ Can Tutor: {', '.join(user.classes_can_tutor)}")
     print(f"→ Needs Help In: {', '.join(user.classes_needed)}")
     print(f"→ Recent Interactions: {len(user.recent_interactions)} recorded")  # keeping tabs
+    if user.class_ratings:
+        print("→ Class-Specific Ratings:")
+        for class_name, rating in user.class_ratings.items():
+            print(f"   {class_name}: {rating:.2f}")
+    else:
+        print("→ No class-specific ratings yet.")
 
 
 def view_user_matches(user_id):
