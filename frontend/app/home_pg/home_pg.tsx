@@ -1,12 +1,12 @@
 import { Link } from 'react-router';
 import './home_pg.css';
-import logo from '../welcome/logo.png';
+import logo from '../assets/logo.png';
 import hero_img from './hero_img.png';
 import how_it_works from './how_it_works.png';
 
 export function Home_Pg() {
   return (
-    <html lang="en">
+    <div>
       <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -192,6 +192,6 @@ export function Home_Pg() {
           </div>
         </footer>
       </body>
-    </html>
+    </div>
   );
 }

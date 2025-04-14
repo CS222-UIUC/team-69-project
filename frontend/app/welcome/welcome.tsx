@@ -1,14 +1,14 @@
 import { z } from 'zod';
 import logo from '../assets/logo.png';
 import './login.css';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 const loginSchema = z.object({
   email: z.string().max(255),
   password: z.string().max(72),
 });
 
-export function Welcome() {
+export default function Welcome() {
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

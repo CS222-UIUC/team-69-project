@@ -1,10 +1,57 @@
 import { Link } from 'react-router';
-import logo from '../welcome/logo.png';
+import logo from '../assets/logo.png';
 import './profile_match.css';
+import { z } from 'zod';
 
-export function Profile_Match() {
+const profileSchema = z.object({
+  display_name: z.string(),
+  major: z.string().max(255),
+  year: z.string(),
+  classes_can_tutor: z.string().optional(), // both of these will eventually be arrays as input, but that requires a whole new input component
+  classes_needed: z.string().optional(),
+});
+
+const valid_years = ['freshman', 'sophomore', 'junior', 'senior'];
+
+export default function Profile_Match() {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData);
+
+    const { success, data: verifiedData } = profileSchema.safeParse(data);
+    if (!success) {
+      return alert('Signup information is incorrect.');
+    }
+
+    if (!valid_years.includes(verifiedData.year.toLowerCase())) {
+      return alert(`Year must be one of ${valid_years.join(', ')}.`);
+    }
+
+    // temp hack until the input is redone
+    const dataToSend: any = { ...verifiedData };
+    dataToSend['classes_can_tutor'] = [dataToSend['classes_can_tutor']];
+    dataToSend['classes_needed'] = [dataToSend['classes_needed']];
+
+    const response = await fetch(`${import.meta.env.VITE_API_BASE}/user`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(dataToSend),
+    });
+
+    if (response.status != 200) {
+      return alert(`Failed to update profile. ${await response.text()}`);
+    }
+
+    return alert('Successfully updated profile');
+  };
+
   return (
-    <html lang="en">
+    <div lang="en">
       <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -44,24 +91,47 @@ export function Profile_Match() {
       </nav>
 
       <main className="container text-black">
-        <section className="profile-section">
+        <form className="profile-section" onSubmit={handleSubmit}>
           <div className="profile-box">
             <h2>
               Your Profile <i className="fas fa-pen-square"></i>
             </h2>
           </div>
           <div className="profile-image"></div>
-          <input className="inbox" type="text" placeholder="Name:" />
-          <input className="inbox" type="text" placeholder="Major:" />
-          <input className="inbox" type="text" placeholder="Year:" />
+          <input
+            className="inbox"
+            name="display_name"
+            type="text"
+            placeholder="Name:"
+          />
+          <input
+            className="inbox"
+            name="major"
+            type="text"
+            placeholder="Major:"
+          />
+          <input
+            className="inbox"
+            name="year"
+            type="text"
+            placeholder="Year:"
+          />
 
           <div className="input-with-icon">
-            <input type="text" placeholder="Can tutor in..." />
+            <input
+              name="classes_can_tutor"
+              type="text"
+              placeholder="Can tutor in..."
+            />
             <i className="fas fa-search"></i>
           </div>
 
           <div className="input-with-icon">
-            <input type="text" placeholder="Needs help in..." />
+            <input
+              name="classes_needed"
+              type="text"
+              placeholder="Needs help in..."
+            />
             <i className="fas fa-search"></i>
           </div>
 
@@ -72,8 +142,10 @@ export function Profile_Match() {
             <input type="checkbox" />
           </div>
 
-          <button className="find-btn">Find Matches!</button>
-        </section>
+          <button className="find-btn" type="submit">
+            Find Matches!
+          </button>
+        </form>
 
         <section className="matches-section">
           <h2>Your Matches</h2>
@@ -161,6 +233,6 @@ export function Profile_Match() {
           </div>
         </section>
       </main>
-    </html>
+    </div>
   );
 }
