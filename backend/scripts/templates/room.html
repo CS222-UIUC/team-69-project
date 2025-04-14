@@ -1,25 +1,36 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container">
-  <h2>Match ID: {{ room }}</h2>
-  <a href="/" class="leave-link">Leave</a>
+<div class="chat-wrapper">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="search-bar">
+      <input type="text" placeholder="Search" id="search-input">
+    </div>
 
-  <div id="chat-container">
-    <ul id="messages">
+    <div class="user-list">
+      {% for u in users %}
+        <a class="user-item" href="/?u={{ session['user_id'] }}&m={{ u.id }}">{{ u.name }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Chat area -->
+  <div class="chat-area">
+    <div class="chat-header">{{ user }}</div>
+
+    <ul id="messages" class="chat-body">
       {% for msg in messages %}
         {% if msg.sender %}
           <li class="{{ 'self' if msg.sender == user else 'other' }}">
-            <strong>{{ msg.sender }}</strong>: {{ msg.message }}
+            {{ msg.message }}
           </li>
-        {% else %}
-          <li class="system-msg">{{ msg.message }}</li>
         {% endif %}
       {% endfor %}
     </ul>
 
-    <div id="input-area">
-      <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off">
+    <div class="chat-input-area">
+      <input type="text" id="message-input" placeholder="Type a message...">
       <button onclick="sendMessage()">Send</button>
     </div>
   </div>
@@ -31,15 +42,8 @@
   socket.on("message", (data) => {
     const msgList = document.getElementById("messages");
     const li = document.createElement("li");
-
-    if (data.sender === "") {
-      li.className = "system-msg";
-      li.textContent = data.message;
-    } else {
-      li.className = data.sender === "{{ user }}" ? "self" : "other";
-      li.innerHTML = `<strong>${data.sender}</strong>: ${data.message}`;
-    }
-
+    li.className = data.sender === "{{ user }}" ? "self" : "other";
+    li.textContent = data.message;
     msgList.appendChild(li);
     msgList.scrollTop = msgList.scrollHeight;
   });
