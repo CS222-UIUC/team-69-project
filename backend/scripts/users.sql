@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
   display_name TEXT NOT NULL, -- set as a default when signing up with gmail account, then allow the user to change it
   email VARCHAR(255) UNIQUE NOT NULL,
   major VARCHAR(255),
+  year VARCHAR(255),
   rating DECIMAL(3, 2) DEFAULT 0.00,
   total_ratings INT DEFAULT 0, -- counter for number of times rated
   rating_history INT[] DEFAULT '{}', -- last 50 ratings
