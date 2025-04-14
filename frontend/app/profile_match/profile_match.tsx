@@ -43,7 +43,7 @@ export function Profile_Match() {
         </div>
       </nav>
 
-      <main className="container">
+      <main className="container text-black">
         <section className="profile-section">
           <div className="profile-box">
             <h2>
