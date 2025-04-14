@@ -6,4 +6,10 @@ node_modules
 __pycache__
 .pytest_cache
 
+
+# don't include environment variables
 .env*
+
+# but allow examples
+!.env*.example
+
