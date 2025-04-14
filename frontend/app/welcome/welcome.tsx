@@ -1,10 +1,49 @@
-import logo from './logo.png';
-import './login.css';
-import { Link } from 'react-router';
 
-export default function Welcome() {
+import { z } from 'zod';
+import logo from '../assets/logo.png';
+import './login.css';
+import { useNavigate } from 'react-router';
+
+const loginSchema = z.object({
+  email: z.string().max(255),
+  password: z.string().max(72),
+});
+
+export function Welcome() {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData);
+
+    const { success, data: verifiedData } = loginSchema.safeParse(data);
+    if (!success) {
+      return alert('Login information has incorrect fields.');
+    }
+
+    if (!verifiedData.email.endsWith('@illinois.edu')) {
+      return alert('You must use an illinois.edu email to login');
+    }
+
+    const response = await fetch(`${import.meta.env.VITE_API_BASE}/login`, {
+      method: 'POST',
+      body: JSON.stringify(verifiedData),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (response.status !== 200) {
+      return alert(await response.text());
+    }
+    console.log(await response.json());
+
+    navigate('/');
+  };
+
   return (
-    <body className="bg-gray-100">
+    <div className="bg-gray-100">
       <nav className="flex justify-between items-center px-8 py-4 bg-white shadow-md">
         <img src={logo} className="w-32" />
         <ul className="flex space-x-6 text-gray-700">
@@ -49,17 +88,18 @@ export default function Welcome() {
       </nav>
 
       <div className="flex justify-center items-center h-screen">
-        <div className="bg-white shadow-lg rounded-lg p-8 w-96">
+        <div className="bg-white shadow-lg rounded-lg p-8 w-96 text-black">
           <h2 className="text-2xl font-bold text-center mb-2">Login</h2>
           <p className="text-gray-500 text-center mb-6">
             Welcome back! Please log in to access your account.
           </p>
 
-          <form>
+          <form onSubmit={handleSubmit}>
             <label className="block mb-2 text-gray-700">Email</label>
             <input
               type="email"
               placeholder="Enter your Email"
+              name="email"
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4"
             />
 
@@ -67,6 +107,7 @@ export default function Welcome() {
             <input
               type="password"
               placeholder="Enter your Password"
+              name="password"
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
 
@@ -92,6 +133,7 @@ export default function Welcome() {
 
             <button
               id="login_button"
+              type="submit"
               className="w-full mt-4 bg-blue-500 text-black py-2 rounded-lg hover:bg-primary"
             >
               Login
@@ -131,6 +173,6 @@ export default function Welcome() {
           </a>
         </div>
       </footer>
-    </body>
+    </div>
   );
 }
