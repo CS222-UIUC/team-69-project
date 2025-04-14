@@ -40,6 +40,7 @@ def signup():
         ),
     )
     new_user_id = cursor.fetchone()[0]
+    conn.commit()
     cursor.close()
 
     user_object = User()

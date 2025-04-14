@@ -91,11 +91,13 @@ def callback():  # https://realpython.com/flask-google-login/
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
     found_user = cursor.fetchone()
+    print(found_user)
+    print(email)
 
     if not found_user:
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO users(display_name, email) VALUES (%s, %s) RETURNING id",
+            "INSERT INTO users (display_name, email) VALUES (%s, %s) RETURNING id",
             (
                 name,
                 email,
@@ -103,9 +105,12 @@ def callback():  # https://realpython.com/flask-google-login/
         )
 
         user_id = cursor.fetchone()[0]
+        conn.commit()
         cursor.close()
     else:
         user_id = found_user[0]
+
+    print(user_id)
 
     user_object = User()
     user_object.id = user_id
