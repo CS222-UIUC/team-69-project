@@ -1,6 +1,7 @@
 import './sign_up.css';
 import logo from '../assets/logo.png';
 import { z } from 'zod';
+import { useNavigate } from 'react-router';
 
 const signupSchema = z.object({
   display_name: z.string(),
@@ -8,37 +9,39 @@ const signupSchema = z.object({
   password: z.string().max(72),
 });
 
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-
-  const formData = new FormData(e.currentTarget);
-  const data = Object.fromEntries(formData);
-
-  const { success, data: verifiedData } = signupSchema.safeParse(data);
-  if (!success) {
-    return alert('Signup information is incorrect.');
-  }
-
-  if (!verifiedData.email.endsWith('@illinois.edu')) {
-    return alert('You must use an illinois.edu email to signup');
-  }
-
-  const response = await fetch(`${import.meta.env.VITE_API_BASE}/signup`, {
-    method: 'POST',
-    body: JSON.stringify(verifiedData),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  if (response.status !== 200) {
-    return alert('Failed to signup.');
-  }
-  console.log(await response.json());
-
-  window.location.href = '/';
-};
-
 export function Signup() {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData);
+
+    const { success, data: verifiedData } = signupSchema.safeParse(data);
+    if (!success) {
+      return alert('Signup information is incorrect.');
+    }
+
+    if (!verifiedData.email.endsWith('@illinois.edu')) {
+      return alert('You must use an illinois.edu email to signup');
+    }
+
+    const response = await fetch(`${import.meta.env.VITE_API_BASE}/signup`, {
+      method: 'POST',
+      body: JSON.stringify(verifiedData),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (response.status !== 200) {
+      return alert('Failed to signup.');
+    }
+    console.log(await response.json());
+
+    navigate('/');
+  };
+
   return (
     <div className="bg-gray-100">
       <nav className="flex justify-between items-center px-8 py-4 bg-white shadow-md">
