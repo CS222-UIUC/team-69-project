@@ -1,3 +1,4 @@
+import json
 import random
 import psycopg2
 from faker import Faker
@@ -135,10 +136,26 @@ def insert_users(users, cursor, conn):
     for user in users:
         cursor.execute(
             """
-            INSERT INTO users (display_name, email, major, rating, total_ratings, rating_history, show_as_backup, classes_can_tutor, classes_needed, recent_interactions, class_ratings)
+            INSERT INTO users (
+                display_name, email, major, rating, total_ratings, rating_history,
+                show_as_backup, classes_can_tutor, classes_needed,
+                recent_interactions, class_ratings
+            )
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
             """,
-            user,
+            (
+                user[0],
+                user[1],
+                user[2],
+                user[3],
+                user[4],
+                user[5],
+                user[6],
+                user[7],
+                user[8],
+                user[9],
+                json.dumps(user[10])  #fix for psycopg2 dict insert
+            )
         )
     conn.commit()
 
@@ -160,7 +177,7 @@ if __name__ == "__main__":  # this file can be ran or used as a library
 
     users = generate_users(200)
     print(users)
-    insert_users(users)
+    insert_users(users, cursor, conn)
 
     cursor.close()
     conn.close()
