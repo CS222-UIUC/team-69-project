@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 import os
 from flask_login import LoginManager
 from flask_cors import CORS
@@ -9,6 +9,7 @@ from routes.signup import signup_bp
 from routes.oauth import oauth_bp
 from routes.user import user_bp
 from conn import config, conn, DEV_MODE
+
 
 app = Flask(__name__)
 
@@ -51,7 +52,6 @@ def user_loader(id: int):
         user_model.id = id
         return user_model
     return None
-
 
 if __name__ == "__main__":
     app.run(debug=DEV_MODE)
