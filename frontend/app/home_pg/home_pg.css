@@ -92,30 +92,72 @@ header nav a {
   font-weight: 600;
 }
 .profiles {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px; /* reduce this value to bring cards closer */
   justify-content: center;
   text-align: center;
 }
 .profile-card {
-  background: white;
-  padding: 1rem;
-  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* centers all children horizontally */
+  justify-content: flex-start;
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
   width: 200px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 .profile-card h4 {
   margin: 0.5rem 0;
 }
+.circle {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background-image: url('hero_img.png');
+  background-size: cover;
+  background-position: center;
+  border: 4px solid #0b969d;
+  border-radius: 50%;
+  margin: 0 auto 10px auto;
+}
 .search-section {
   padding: 2rem;
   text-align: center;
+  align-items: center;
 }
-.search-bar {
-  padding: 0.5rem;
-  width: 200px;
-  margin-right: 1rem;
+.search-section h1 {
+  font-size: 3rem;
+  margin: 0 0;
+  color: #006d77;
+}
+.search-bar input {
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px 0 0 6px;
+  outline: none;
+  width: 30rem;
+  height: 4rem;
+}
+
+.search-bar button {
+  padding: 8px 16px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-left: none;
+  background-color: #bee1e6;
+  color: white;
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+  height: 4rem;
+}
+
+.search-bar button:hover {
+  background-color: #006d77;
 }
 footer {
   background: #f1f1f1;

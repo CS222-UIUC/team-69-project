@@ -110,7 +110,7 @@ export default function Welcome() {
 
             <p className="text-center text-sm text-gray-600 mt-4">
               Don't have an account?{' '}
-              <Link to="signup" id="link" className=" hover:underline">
+              <Link to="/signup" id="link" className=" hover:underline">
                 Sign Up
               </Link>
             </p>

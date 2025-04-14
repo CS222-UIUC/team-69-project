@@ -7,6 +7,10 @@ import how_it_works from './how_it_works.png';
 export function Home_Pg() {
   return (
     <html lang="en">
+      <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      />
       <body>
         <nav className="flex justify-between items-center px-8 py-4 bg-white shadow-md">
           <img src={logo} className="w-32" />
@@ -86,7 +90,10 @@ export function Home_Pg() {
           <h2>A Sneak Peek at our Top Profiles!</h2>
           <div className="profiles">
             <div className="profile-card">
-              <h4>A. R.</h4>
+              <div className="circle"></div>
+              <h4>
+                <b>A. R.</b>
+              </h4>
               <p>
                 <b>Can Tutor In:</b> CS101, CS201
                 <br />
@@ -96,7 +103,10 @@ export function Home_Pg() {
               </p>
             </div>
             <div className="profile-card">
-              <h4>C. A.</h4>
+              <div className="circle"></div>
+              <h4>
+                <b>C. A.</b>
+              </h4>
               <p>
                 <b>Can Tutor In:</b> STAT200, MATH220
                 <br />
@@ -106,7 +116,10 @@ export function Home_Pg() {
               </p>
             </div>
             <div className="profile-card">
-              <h4>Y. O.</h4>
+              <div className="circle"></div>
+              <h4>
+                <b>Y. O.</b>
+              </h4>
               <p>
                 <b>Can Tutor In:</b> PHYS211
                 <br />
@@ -116,7 +129,10 @@ export function Home_Pg() {
               </p>
             </div>
             <div className="profile-card">
-              <h4>A. U.</h4>
+              <div className="circle"></div>
+              <h4>
+                <b>A. U.</b>
+              </h4>
               <p>
                 <b>Can Tutor In:</b> ANTH101
                 <br />
@@ -126,7 +142,10 @@ export function Home_Pg() {
               </p>
             </div>
             <div className="profile-card">
-              <h4>E. B.</h4>
+              <div className="circle"></div>
+              <h4>
+                <b>E. B.</b>
+              </h4>
               <p>
                 <b>Can Tutor In:</b> MATH140
                 <br />
@@ -136,7 +155,10 @@ export function Home_Pg() {
               </p>
             </div>
             <div className="profile-card">
-              <h4>A. B. S.</h4>
+              <div className="circle"></div>
+              <h4>
+                <b>A. B. S.</b>
+              </h4>
               <p>
                 <b>Can Tutor In:</b> CHEM101
                 <br />
@@ -147,6 +169,28 @@ export function Home_Pg() {
             </div>
           </div>
         </section>
+        <section className="section search-section">
+          <h1>Find a Tutor For</h1>
+          <div className="search-bar">
+            <input type="text" placeholder="What would you like to learn?" />
+            <button type="submit">
+              <i className="fas fa-search"></i>
+            </button>
+          </div>
+        </section>
+        <footer className="bg-gray-100 py-6 text-center text-gray-600 text-sm">
+          <div className="mt-2 flex justify-center space-x-4">
+            <a href="#" className="hover:text-blue-500">
+              Facebook
+            </a>
+            <a href="#" className="hover:text-blue-500">
+              Twitter
+            </a>
+            <a href="#" className="hover:text-blue-500">
+              LinkedIn
+            </a>
+          </div>
+        </footer>
       </body>
     </html>
   );

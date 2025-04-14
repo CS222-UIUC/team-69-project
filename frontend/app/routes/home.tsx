@@ -1,5 +1,6 @@
 import type { Route } from './+types/home';
 import { Home_Pg } from '../home_pg/home_pg';
+import { Profile_Match } from '~/profile_match/profile_match';
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -9,5 +10,5 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  return <Home_Pg />;
+  return <Profile_Match />;
 }
