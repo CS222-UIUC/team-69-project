@@ -13,7 +13,11 @@ from routes.signup import signup_bp
 from conn import config, conn
 
 app = Flask(__name__)
-app.secret_key = os.urandom(32)
+app.secret_key = (
+    bytes.fromhex(config["FLASK_SECRET_KEY"])
+    if config["FLASK_SECRET_KEY"]
+    else os.urandom(32)
+)
 app.register_blueprint(login_bp)
 app.register_blueprint(signup_bp)
 CORS(app)
