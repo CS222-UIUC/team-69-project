@@ -15,3 +15,4 @@ conn = psycopg2.connect(
     password=config["POSTGRES_DATABASE_PASSWORD"],
     port=config["POSTGRES_DATABASE_PORT"],
 )
+DEV_MODE = config["DEV"] == "True"

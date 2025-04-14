@@ -10,7 +10,10 @@ from flask_cors import CORS
 from models.user import User
 from routes.login import login_bp
 from routes.signup import signup_bp
-from conn import config, conn
+from conn import config, conn, DEV_MODE
+
+if DEV_MODE:
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 app = Flask(__name__)
 app.secret_key = (
@@ -76,16 +79,47 @@ def callback():  # https://realpython.com/flask-google-login/
     uri, headers, body = client.add_token(userinfo_endpoint)
     userinfo_response = requests.get(uri, headers=headers, data=body)
 
-    if userinfo_response.json().get("email_verified"):
-        return None  # temp needs testing later
+    if not userinfo_response.json().get("email_verified"):
+        return "Failed to authenticate user.", 400
 
-    return "Failed to authenticate user.", 400
+    email = userinfo_response.json()["email"]
+    name = userinfo_response.json()["given_name"]
+
+    if not email.endswith("@illinois.edu"):
+        return "Only illinois.edu emails are allowed on this service.", 400
+
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
+    found_user = cursor.fetchone()
+
+    if not found_user:
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO users(display_name, email) VALUES (%s, %s) RETURNING id",
+            (
+                name,
+                email,
+            ),
+        )
+
+        user_id = cursor.fetchone()[0]
+        cursor.close()
+    else:
+        user_id = found_user[0]
+
+    user_object = User()
+    user_object.id = user_id
+
+    login_user(user_object)
+
+    return redirect(config["CLIENT_SITE_URL"])
 
 
 def get_user(id):
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE id = %s", id)
+    cursor.execute("SELECT * FROM users WHERE id = %s", (id,))
     found_user = cursor.fetchone()
+    cursor.close()
     if not found_user:
         return None
 
@@ -103,4 +137,4 @@ def user_loader(id: int):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=DEV_MODE)
