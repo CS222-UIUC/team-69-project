@@ -77,9 +77,13 @@ export function Signup() {
           <a href="#" id="link" className="text-gray-700 mr-4 ">
             Sign Up
           </a>
-          <a href="#" className="text-black px-4 py-2 rounded-sm">
+          <Link
+            to="/login"
+            id="login_button"
+            className="text-black px-4 py-2 rounded-lg"
+          >
             Login
-          </a>
+          </Link>
         </div>
       </nav>
 
@@ -173,9 +177,9 @@ export function Signup() {
 
             <p className="text-center text-sm text-gray-600 mt-4">
               Already have an account?{' '}
-              <a href="#" id="link" className=" hover:underline">
+              <Link to="/login" id="link" className=" hover:underline">
                 Login
-              </a>
+              </Link>
             </p>
           </form>
         </div>
