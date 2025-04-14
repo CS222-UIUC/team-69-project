@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+  <h2>Match ID: {{ room }}</h2>
+  <a href="/" class="leave-link">Leave</a>
+
+  <div id="chat-container">
+    <ul id="messages">
+      {% for msg in messages %}
+        {% if msg.sender %}
+          <li class="{{ 'self' if msg.sender == user else 'other' }}">
+            <strong>{{ msg.sender }}</strong>: {{ msg.message }}
+          </li>
+        {% else %}
+          <li class="system-msg">{{ msg.message }}</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+
+    <div id="input-area">
+      <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const socket = io();
+
+  socket.on("message", (data) => {
+    const msgList = document.getElementById("messages");
+    const li = document.createElement("li");
+
+    if (data.sender === "") {
+      li.className = "system-msg";
+      li.textContent = data.message;
+    } else {
+      li.className = data.sender === "{{ user }}" ? "self" : "other";
+      li.innerHTML = `<strong>${data.sender}</strong>: ${data.message}`;
+    }
+
+    msgList.appendChild(li);
+    msgList.scrollTop = msgList.scrollHeight;
+  });
+
+  function sendMessage() {
+    const input = document.getElementById("message-input");
+    const message = input.value.trim();
+    if (!message) return;
+    socket.emit("message", { message });
+    input.value = "";
+  }
+</script>
+{% endblock %}
