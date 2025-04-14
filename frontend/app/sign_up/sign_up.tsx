@@ -155,9 +155,7 @@ export function Signup() {
 
             <button
               id="signup_button"
-
               type="submit"
-
               className="w-full mt-4 bg-blue-500 text-black py-2 rounded-lg hover:bg-primary"
             >
               Sign Up
@@ -179,11 +177,9 @@ export function Signup() {
 
             <p className="text-center text-sm text-gray-600 mt-4">
               Already have an account?{' '}
-
               <Link to="/login" id="link" className=" hover:underline">
                 Login
               </Link>
-
             </p>
           </form>
         </div>
