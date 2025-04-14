@@ -2,6 +2,8 @@ import psycopg2
 from datetime import datetime
 from dotenv import dotenv_values
 import os
+import threading
+import time
 
 # Load from .env and .env.development.local
 config = {
@@ -33,6 +35,7 @@ def show_chat(cursor, match_id):
     """, (match_id,))
     messages = cursor.fetchall()
 
+    os.system('clear' if os.name == 'posix' else 'cls')
     print("\n=== Chat History ===\n")
     for sender_id, text, timestamp in messages:
         sender = get_display_name(cursor, sender_id)
@@ -46,6 +49,11 @@ def send_message(cursor, match_id, sender_id, message):
         VALUES (%s, %s, %s, NOW());
     """, (match_id, sender_id, message))
 
+def auto_refresh_chat(cursor, match_id, stop_event):
+    while not stop_event.is_set():
+        show_chat(cursor, match_id)
+        time.sleep(5)
+
 def main():
     conn = connect_db()
     cursor = conn.cursor()
@@ -55,16 +63,22 @@ def main():
         sender_id = int(input("Enter your user ID: ").strip())
         show_chat(cursor, match_id)
 
-        print("Type your messages below. Type 'exit' to leave the chat.\n")
+        stop_event = threading.Event()
+        refresh_thread = threading.Thread(target=auto_refresh_chat, args=(cursor, match_id, stop_event))
+        refresh_thread.daemon = True
+        refresh_thread.start()
+
+        print("Type your messages below. Type '/exit' to leave the chat.\n")
 
         while True:
             message = input("You: ")
-            if message.lower() == "exit":
+            if message.lower().strip() == "/exit":
+                stop_event.set()
+                refresh_thread.join()
                 break
             if message.strip():
                 send_message(cursor, match_id, sender_id, message)
                 conn.commit()
-                show_chat(cursor, match_id)
 
     finally:
         cursor.close()
