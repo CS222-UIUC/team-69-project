@@ -7,23 +7,26 @@ from models.user import User
 from routes.login import login_bp
 from routes.signup import signup_bp
 from routes.oauth import oauth_bp
+from routes.user import user_bp
 from conn import config, conn, DEV_MODE
 
-# 👇 Tell Flask where to find the templates folder
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-TEMPLATE_DIR = os.path.join(BASE_DIR, "scripts/templates")
 
-app = Flask(__name__, template_folder=TEMPLATE_DIR)
+app = Flask(__name__)
 
 app.secret_key = (
     bytes.fromhex(config["FLASK_SECRET_KEY"])
     if config["FLASK_SECRET_KEY"]
     else os.urandom(32)
 )
+
+app.config["SESSION_COOKIE_SAMESITE"] = "None"
+app.config["SESSION_COOKIE_SECURE"] = True
+
 app.register_blueprint(login_bp)
 app.register_blueprint(signup_bp)
 app.register_blueprint(oauth_bp)
-CORS(app)
+app.register_blueprint(user_bp)
+CORS(app, supports_credentials=True)
 
 login_manager = LoginManager()
 login_manager.init_app(app)

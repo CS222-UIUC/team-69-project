@@ -1,0 +1,184 @@
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: #f7f7f7;
+}
+
+header {
+  background: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 30px;
+  border-bottom: 1px solid #ccc;
+}
+
+.logo {
+  font-weight: bold;
+  color: teal;
+  font-size: 1.5em;
+}
+
+nav a {
+  margin: 0 10px;
+  text-decoration: none;
+  color: #333;
+}
+
+.user-dropdown {
+  font-size: 0.9em;
+}
+
+.container {
+  display: flex;
+  padding: 20px;
+}
+.profile-box {
+  border: 2px solid white;
+  padding: 10px;
+  display: inline-block;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  width: 15rem;
+  height: 3rem;
+}
+
+.container h2 {
+  size: 5rem;
+}
+
+.profile-section {
+  width: 35%;
+  background: #c7e4e6;
+  padding: 20px;
+  border-radius: 10px;
+  margin-right: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-section h2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.5rem;
+}
+
+.profile-image {
+  width: 80px;
+  height: 80px;
+  background: #ddd;
+  border-radius: 50%;
+  margin: 15px auto;
+}
+
+input[type='text'] {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 20px;
+  border: none;
+  border-radius: 6px;
+  background-color: white;
+  text-decoration-color: black;
+  height: 3rem;
+}
+
+input::placeholder {
+  color: black;
+  font-size: 1.2rem;
+}
+
+.input-with-icon {
+  position: relative;
+  width: 100%;
+}
+
+.input-with-icon input {
+  padding-right: 30px;
+}
+
+.input-with-icon i {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  color: #555;
+}
+
+.toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 15px 0;
+  gap: 3rem;
+  font-size: 1.5rem;
+}
+
+#checkbox {
+  color: #0b969d;
+}
+
+#checkbox::after {
+  color: #0b969d;
+}
+
+.find-btn {
+  background: #0b969d;
+  color: white;
+  padding: 10px;
+  border: none;
+  width: 60%;
+  border-radius: 6px;
+  font-weight: bold;
+  height: 3rem;
+  font-size: 1.5rem;
+}
+
+.matches-section {
+  width: 65%;
+}
+
+.matches-section h2 {
+  text-align: center;
+  font-size: 2rem;
+  padding-bottom: 4rem;
+  font-weight: 500;
+}
+
+.cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.card {
+  background: white;
+  border-radius: 10px;
+  border-color: black;
+  border-width: 2px;
+  padding: 15px;
+  width: 220px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.card-img {
+  width: 60px;
+  height: 60px;
+  background: #ddd;
+  border: 4px solid #0b969d;
+  border-radius: 50%;
+  margin: 0 auto 10px auto;
+}
+
+.chat-btn {
+  background: #c7e4e6;
+  border: none;
+  padding: 10px;
+  width: 100%;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
