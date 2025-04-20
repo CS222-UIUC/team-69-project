@@ -1,6 +1,6 @@
 import type { Route } from './+types/home';
-import { Welcome } from '../welcome/welcome';
-import { Signup } from '../sign_up/sign_up';
+import { Home_Pg } from '../home_pg/home_pg';
+import Profile_Match from '~/profile_match/profile_match';
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -10,5 +10,5 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  return <Welcome />;
+  return <Profile_Match />;
 }

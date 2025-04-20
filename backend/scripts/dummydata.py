@@ -9,48 +9,30 @@ import os
 fake = Faker()
 
 uiuc_classes = [
-    "MATH 241",
-    "MATH 285",
-    "MATH 415",
-    "MATH 444",
-    "MATH 461",
-    "PHYS 211",
-    "PHYS 212",
-    "PHYS 213",
-    "PHYS 214",
-    "CHEM 102",
-    "CHEM 332",
-    "CHEM 440",
-    "MCB 150",
-    "IB 150",
-    "IB 302",
-    "PHIL 101",
-    "PHIL 103",
-    "CS 124",
-    "CS 225",
-    "CS 233",
-    "CS 374",
-    "ECE 110",
-    "ECE 120",
+    "MATH 241", "MATH 285", "MATH 415", "MATH 444", "MATH 461",
+    "PHYS 211", "PHYS 212", "PHYS 213", "PHYS 214",
+    "CHEM 102", "CHEM 332", "CHEM 440",
+    "MCB 150", "IB 150", "IB 302",
+    "PHIL 101", "PHIL 103",
+    "CS 124", "CS 225", "CS 233", "CS 374",
+    "ECE 110", "ECE 120"
 ]
+
 uiuc_majors = [
-    "Computer Science",
-    "Mathematics",
-    "Physics",
-    "Integrative Biology",
-    "Chemistry",
+    "Computer Science", "Mathematics", "Physics", "Integrative Biology", "Chemistry"
 ]
+
+year_options = ["Freshman", "Sophomore", "Junior", "Senior"]
 
 def random_timestamps(n):
     return [
-        datetime.now()
-        - timedelta(days=random.randint(0, 365), hours=random.randint(0, 24))
+        datetime.now() - timedelta(days=random.randint(0, 365), hours=random.randint(0, 24))
         for _ in range(n)
     ]
 
 def generate_users(n):
     users = []
-    shared_classes = random.sample(uiuc_classes, k=6)  # Shared overlap across users
+    shared_classes = random.sample(uiuc_classes, k=6)
     used_emails = set()
 
     while len(users) < n:
@@ -61,6 +43,7 @@ def generate_users(n):
         used_emails.add(email)
 
         major = random.choice(uiuc_majors)
+        year = random.choice(year_options)
         total_ratings = random.randint(0, 100)
         rating_history = [
             random.choices([4, 5, 3], weights=[0.4, 0.5, 0.1])[0]
@@ -71,19 +54,16 @@ def generate_users(n):
         show_as_backup = random.choice([True, False])
         max_classes = 4
 
-        # Generate disjoint class lists to generate classes_can_tutor
-        num_shared_tutor = random.randint(1, min(len(shared_classes), max_classes)) #num of shared classes the user can tutor
-        num_personal_tutor = random.randint(0, max_classes - num_shared_tutor) #num of personal classes the user can tutor
+        num_shared_tutor = random.randint(1, min(len(shared_classes), max_classes))
+        num_personal_tutor = random.randint(0, max_classes - num_shared_tutor)
         classes_can_tutor = random.sample(shared_classes, num_shared_tutor) + random.sample(
             list(set(uiuc_classes) - set(shared_classes)), num_personal_tutor
         )
 
-        # Remove tutor classes to enforce disjoint and generate classes_needed
         excluded = set(classes_can_tutor)
         remaining_shared = list(set(shared_classes) - excluded)
         remaining_personal = list(set(uiuc_classes) - excluded)
 
-        # Skip this user if no options left
         if not remaining_shared and not remaining_personal:
             continue
 
@@ -99,7 +79,6 @@ def generate_users(n):
         needed_personal = random.sample(remaining_personal, num_personal_needed) if remaining_personal else []
         classes_needed = needed_shared + needed_personal
 
-        # Final safety check
         if not classes_can_tutor or not classes_needed:
             continue
 
@@ -113,6 +92,7 @@ def generate_users(n):
             display_name,
             email,
             major,
+            year,
             rating,
             total_ratings,
             rating_history,
@@ -128,38 +108,35 @@ def generate_users(n):
     print()
     return users
 
-    print(f"\rGenerating users... ({len(users)}/{n})", end="")
-    print()
-    return users
-
 def insert_users(users, cursor, conn):
     for user in users:
         cursor.execute(
             """
             INSERT INTO users (
-                display_name, email, major, rating, total_ratings, rating_history,
+                display_name, email, major, year, rating, total_ratings, rating_history,
                 show_as_backup, classes_can_tutor, classes_needed,
                 recent_interactions, class_ratings
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
             """,
             (
-                user[0],
-                user[1],
-                user[2],
-                user[3],
-                user[4],
-                user[5],
-                user[6],
-                user[7],
-                user[8],
-                user[9],
-                json.dumps(user[10])  #fix for psycopg2 dict insert
+                user[0],  # display_name
+                user[1],  # email
+                user[2],  # major
+                user[3],  # year
+                user[4],  # rating
+                user[5],  # total_ratings
+                user[6],  # rating_history
+                user[7],  # show_as_backup
+                user[8],  # classes_can_tutor
+                user[9],  # classes_needed
+                user[10], # recent_interactions
+                json.dumps(user[11])  # class_ratings
             )
         )
     conn.commit()
 
-if __name__ == "__main__":  # this file can be ran or used as a library
+if __name__ == "__main__":
     config = {
         **dotenv_values(".env"),
         **dotenv_values(".env.development.local"),

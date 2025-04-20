@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="chat-wrapper">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="search-bar">
+      <input type="text" placeholder="Search" id="search-input">
+    </div>
+
+    <div class="user-list">
+      {% for u in users %}
+        <a class="user-item" href="/?u={{ session['user_id'] }}&m={{ u.id }}">{{ u.name }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Chat area -->
+  <div class="chat-area">
+    <div class="chat-header">{{ user }}</div>
+
+    <ul id="messages" class="chat-body">
+      {% for msg in messages %}
+        {% if msg.sender %}
+          <li class="{{ 'self' if msg.sender == user else 'other' }}">
+            {{ msg.message }}
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+
+    <div class="chat-input-area">
+      <input type="text" id="message-input" placeholder="Type a message...">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const socket = io();
+
+  socket.on("message", (data) => {
+    const msgList = document.getElementById("messages");
+    const li = document.createElement("li");
+    li.className = data.sender === "{{ user }}" ? "self" : "other";
+    li.textContent = data.message;
+    msgList.appendChild(li);
+    msgList.scrollTop = msgList.scrollHeight;
+  });
+
+  function sendMessage() {
+    const input = document.getElementById("message-input");
+    const message = input.value.trim();
+    if (!message) return;
+    socket.emit("message", { message });
+    input.value = "";
+  }
+</script>
+{% endblock %}

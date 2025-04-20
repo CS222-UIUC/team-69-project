@@ -1,14 +1,14 @@
 import { z } from 'zod';
 import logo from '../assets/logo.png';
 import './login.css';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 const loginSchema = z.object({
   email: z.string().max(255),
   password: z.string().max(72),
 });
 
-export function Welcome() {
+export default function Welcome() {
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -47,9 +47,9 @@ export function Welcome() {
         <img src={logo} className="w-32" />
         <ul className="flex space-x-6 text-gray-700">
           <li>
-            <a href="#" id="link">
+            <Link to="/" id="link">
               Home
-            </a>
+            </Link>
           </li>
           <li>
             <a href="#" id="link">
@@ -73,9 +73,9 @@ export function Welcome() {
           </li>
         </ul>
         <div>
-          <a href="#" id="link" className="text-gray-700 mr-4 ">
+          <Link to="/signup" id="link" className="text-gray-700 mr-4 ">
             Sign Up
-          </a>
+          </Link>
           <a
             href="#"
             id="login_button"
@@ -151,9 +151,9 @@ export function Welcome() {
 
             <p className="text-center text-sm text-gray-600 mt-4">
               Don't have an account?{' '}
-              <a href="#" id="link" className=" hover:underline">
+              <Link to="/signup" id="link" className=" hover:underline">
                 Sign Up
-              </a>
+              </Link>
             </p>
           </form>
         </div>
