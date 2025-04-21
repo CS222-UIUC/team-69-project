@@ -1,66 +1,66 @@
 import { Link } from 'react-router';
-import { useState } from 'react';
+import {useState} from 'react';
 import logo from '../assets/logo.png';
 import './profile_match.css';
-//import { z } from 'zod';
+import { z } from 'zod';
 
-// const profileSchema = z.object({
-//   display_name: z.string(),
-//   major: z.string().max(255),
-//   year: z.string(),
-//   classes_can_tutor: z.string().optional(), // both of these will eventually be arrays as input, but that requires a whole new input component
-//   classes_needed: z.string().optional(),
-// });
+const profileSchema = z.object({
+  display_name: z.string(),
+  major: z.string().max(255),
+  year: z.string(),
+  classes_can_tutor: z.string().optional(), // both of these will eventually be arrays as input, but that requires a whole new input component
+  classes_needed: z.string().optional(),
+});
 
 const valid_years = ['freshman', 'sophomore', 'junior', 'senior'];
 
 export default function Profile_Match() {
   //Stuff for adding to lists
   const [items1, setItems1] = useState<string[]>([]);
-  const [input1, setInput1] = useState<string>('');
+  const [input1, setInput1] = useState<string>("");
 
   const [items2, setItems2] = useState<string[]>([]);
-  const [input2, setInput2] = useState<string>('');
+  const [input2, setInput2] = useState<string>("");
 
   const addItem1 = () => {
     const trimmed = input1.trim();
-    if (trimmed !== '') {
-      setItems1((prev) => [...prev, trimmed]);
-      setInput1('');
+    if (trimmed !== "") {
+      setItems1(prev => [...prev, trimmed]);
+      setInput1("");
     }
   };
 
   const addItem2 = () => {
     const trimmed = input2.trim();
-    if (trimmed !== '') {
-      setItems2((prev) => [...prev, trimmed]);
-      setInput2('');
+    if (trimmed !== "") {
+      setItems2(prev => [...prev, trimmed]);
+      setInput2("");
     }
   };
 
   const deleteItem1 = (indexToRemove: number) => {
-    setItems1((prev) => prev.filter((_, index) => index !== indexToRemove));
+    setItems1(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
   const deleteItem2 = (indexToRemove: number) => {
-    setItems2((prev) => prev.filter((_, index) => index !== indexToRemove));
+    setItems2(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
   const handleKeyPress1 = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       addItem1();
     }
   };
 
   const handleKeyPress2 = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       addItem2();
     }
   };
   //------
-
+    
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -97,7 +97,9 @@ export default function Profile_Match() {
     return alert('Successfully updated profile');
   };
 
-  function ItemList() {}
+  function ItemList() {
+    
+  };
 
   return (
     <div lang="en">
