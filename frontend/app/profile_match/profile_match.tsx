@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import logo from '../assets/logo.png';
 import './profile_match.css';
 import { z } from 'zod';
+import { useQuery } from '@tanstack/react-query';
 
 const profileSchema = z.object({
   display_name: z.string(),
@@ -13,7 +14,30 @@ const profileSchema = z.object({
 
 const valid_years = ['freshman', 'sophomore', 'junior', 'senior'];
 
+interface Match {
+  display_name: string;
+  classes_can_tutor: string[];
+  classes_needed: string[];
+  major: string;
+  year: string;
+  rating: string;
+}
+
 export default function Profile_Match() {
+  const {
+    data: matches,
+    error,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['matches'],
+    queryFn: async (): Promise<Match[]> => {
+      return fetch(`${import.meta.env.VITE_API_BASE}/match/matches`, {
+        credentials: 'include',
+      }).then((response) => response.json());
+    },
+  });
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -46,6 +70,22 @@ export default function Profile_Match() {
     if (response.status != 200) {
       return alert(`Failed to update profile. ${await response.text()}`);
     }
+
+    const match_response = await fetch(
+      `${import.meta.env.VITE_API_BASE}/match/new_user`,
+      {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dataToSend),
+      }
+    );
+    if (match_response.status != 200) {
+      return alert(`Failed to match profile. ${await match_response.text()}`);
+    }
+    refetch();
 
     return alert('Successfully updated profile');
   };
@@ -90,7 +130,7 @@ export default function Profile_Match() {
         </div>
       </nav>
 
-      <main className="container text-black">
+      <main className="container text-black w-screen">
         <form className="profile-section" onSubmit={handleSubmit}>
           <div className="profile-box">
             <h2>
@@ -150,86 +190,35 @@ export default function Profile_Match() {
         <section className="matches-section">
           <h2>Your Matches</h2>
           <div className="cards">
-            <div className="card">
-              <div className="card-img"></div>
-              <h3>A. R.</h3>
-              <p>
-                <strong>Can tutor in:</strong> CS 128, CS 225
-              </p>
-              <p>
-                <strong>Needs help in:</strong> ECON 203
-              </p>
-              <p>
-                <strong>Major:</strong> CS + Statistics
-              </p>
-              <p>
-                <strong>Year:</strong> Sophomore
-              </p>
-              <p>
-                <strong>Rating:</strong> 4.8
-              </p>
-              <button className="chat-btn">Chat Now!</button>
-            </div>
-            <div className="card">
-              <div className="card-img"></div>
-              <h3>C. A.</h3>
-              <p>
-                <strong>Can tutor in:</strong> ECE 220
-              </p>
-              <p>
-                <strong>Needs help in:</strong> CHEM 360
-              </p>
-              <p>
-                <strong>Major:</strong> Electrical Engineering
-              </p>
-              <p>
-                <strong>Year:</strong> Freshman
-              </p>
-              <p>
-                <strong>Rating:</strong> 4.6
-              </p>
-              <button className="chat-btn">Chat Now!</button>
-            </div>
-            <div className="card">
-              <div className="card-img"></div>
-              <h3>A. U.</h3>
-              <p>
-                <strong>Can tutor in:</strong> ADV 281, ADV 150
-              </p>
-              <p>
-                <strong>Needs help in:</strong> CS 173
-              </p>
-              <p>
-                <strong>Major:</strong> Advertising
-              </p>
-              <p>
-                <strong>Year:</strong> Freshman
-              </p>
-              <p>
-                <strong>Rating:</strong> 4.8
-              </p>
-              <button className="chat-btn">Chat Now!</button>
-            </div>
-            <div className="card">
-              <div className="card-img"></div>
-              <h3>Y. G.</h3>
-              <p>
-                <strong>Can tutor in:</strong> PSYC 248
-              </p>
-              <p>
-                <strong>Needs help in:</strong> MATH 231, PHYS 212
-              </p>
-              <p>
-                <strong>Major:</strong> CS + Psychology
-              </p>
-              <p>
-                <strong>Year:</strong> Senior
-              </p>
-              <p>
-                <strong>Rating:</strong> 4.7
-              </p>
-              <button className="chat-btn">Chat Now!</button>
-            </div>
+            {isLoading && <p>Matching in progress...</p>}
+            {!isLoading &&
+              matches &&
+              matches.map((match) => {
+                return (
+                  <div className="card" key={match.display_name}>
+                    <div className="card-img"></div>
+                    <h3>{match.display_name}</h3>
+                    <p>
+                      <strong>Can tutor in:</strong>{' '}
+                      {match.classes_can_tutor.join(', ')}
+                    </p>
+                    <p>
+                      <strong>Needs help in:</strong>{' '}
+                      {match.classes_needed.join(', ')}
+                    </p>
+                    <p>
+                      <strong>Major:</strong> {match.major}
+                    </p>
+                    <p>
+                      <strong>Year:</strong> {match.year}
+                    </p>
+                    <p>
+                      <strong>Rating:</strong> {match.rating}
+                    </p>
+                    <button className="chat-btn">Chat Now!</button>
+                  </div>
+                );
+              })}
           </div>
         </section>
       </main>

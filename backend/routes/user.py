@@ -44,14 +44,14 @@ def update_user_profile():
     classes_can_tutor = validated_data["classes_can_tutor"]
     if classes_can_tutor and len(classes_can_tutor) > 0:
         cursor.execute(
-            "UPDATE users SET classes_can_tutor = classes_can_tutor || %s WHERE id =  %s",
+            "UPDATE users SET classes_can_tutor = %s WHERE id =  %s",
             (classes_can_tutor, user_id),
         )
 
     classes_needed = validated_data["classes_needed"]
     if classes_needed and len(classes_needed) > 0:
         cursor.execute(
-            "UPDATE users SET classes_needed = classes_needed || %s WHERE id =  %s",
+            "UPDATE users SET classes_needed = %s WHERE id =  %s",
             (classes_needed, user_id),
         )
 
