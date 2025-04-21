@@ -191,6 +191,7 @@ export default function Profile_Match() {
           <h2>Your Matches</h2>
           <div className="cards">
             {isLoading && <p>Matching in progress...</p>}
+            {error && <p>Matched failed.</p>}
             {!isLoading &&
               matches &&
               matches.map((match) => {

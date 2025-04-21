@@ -75,8 +75,8 @@ def get_match_object(match_slice):
     }
 
 
-@login_required
 @matching_bp.route("/matches", methods=["GET"])
+@login_required
 def get_user_matches():
     user_id = current_user.id
 
@@ -119,9 +119,9 @@ def get_user_matches():
         requester_id = match[0]
 
         if requester_id == user_id:
-            output.append(get_match_object(match[1:7]))
-        else:
             output.append(get_match_object(match[8:14]))
+        else:
+            output.append(get_match_object(match[1:7]))
 
     return jsonify(output)
 
