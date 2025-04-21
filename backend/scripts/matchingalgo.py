@@ -2,6 +2,7 @@ import psycopg2
 from datetime import datetime
 from psycopg2.extras import execute_values
 
+
 # Represents a user pulled from DB
 class User:
     def __init__(
@@ -37,7 +38,7 @@ class User:
             return 0.5
         last_interaction = max(self.recent_interactions)
         days_since_last = (current_time - last_interaction).days
-        return max(0.5, 0.95 ** days_since_last)
+        return max(0.5, 0.95**days_since_last)
 
     def get_penalty_multiplier(self):
         if self.total_ratings < 5:
@@ -95,9 +96,7 @@ def fetch_users_from_db(cursor):
             class_ratings=parse_pg_dict(row[12]),
         )
         user.recent_interactions = [
-            datetime.strptime(ts, "%Y-%m-%d %H:%M:%S.%f")
-            if isinstance(ts, str)
-            else ts
+            datetime.strptime(ts, "%Y-%m-%d %H:%M:%S.%f") if isinstance(ts, str) else ts
             for ts in user.recent_interactions
         ]
         users.append(user)
@@ -115,7 +114,9 @@ def get_match_score_and_tier(user, current_user):
     activity = user.get_activity_score(datetime.now())
 
     tutor_overlap = len(set(user.classes_can_tutor) & set(current_user.classes_needed))
-    request_overlap = len(set(user.classes_needed) & set(current_user.classes_can_tutor))
+    request_overlap = len(
+        set(user.classes_needed) & set(current_user.classes_can_tutor)
+    )
     tutor_boost = 1 + min(tutor_overlap * 0.07, 0.25)
     request_penalty = 1 - min(request_overlap * 0.05, 0.25)
     major_boost = 1.10 if user.major == current_user.major else 1.00
@@ -140,7 +141,16 @@ def get_match_score_and_tier(user, current_user):
     if class_specific_rating > 0:
         rating = 0.7 * class_specific_rating + 0.3 * base_rating
 
-    score = round(rating * penalty * activity * tutor_boost * request_penalty * major_boost * year_boost, 3)
+    score = round(
+        rating
+        * penalty
+        * activity
+        * tutor_boost
+        * request_penalty
+        * major_boost
+        * year_boost,
+        3,
+    )
 
     if rating >= 4.0 and user.major == current_user.major:
         tier = "Tier 1: High Rating + Major Match"
@@ -179,7 +189,10 @@ def match_new_user_request(cursor, conn, new_user_id):
             continue
         if not (set(other_user.classes_can_tutor) & set(current_user.classes_needed)):
             continue
-        if not (set(current_user.classes_can_tutor) & set(other_user.classes_needed)) and not other_user.show_as_backup:
+        if (
+            not (set(current_user.classes_can_tutor) & set(other_user.classes_needed))
+            and not other_user.show_as_backup
+        ):
             continue
 
         raw_score, tier = get_match_score_and_tier(other_user, current_user)
@@ -188,7 +201,17 @@ def match_new_user_request(cursor, conn, new_user_id):
     normalized_scores = normalize_scores(match_scores)
     top_10 = sorted(normalized_scores, key=lambda x: -x[1])[:10]
 
-    match_pairs = [(new_user_id, matched_user_id, score) for matched_user_id, score, _ in top_10]
+    match_pairs = [
+        (new_user_id, matched_user_id, score) for matched_user_id, score, _ in top_10
+    ]
+
+    cursor.execute(
+        """
+        DELETE FROM matches
+        WHERE requester_id = %s OR matched_user_id = %s;
+        """,
+        (new_user_id, new_user_id),
+    )
 
     execute_values(
         cursor,
@@ -202,6 +225,7 @@ def match_new_user_request(cursor, conn, new_user_id):
     )
 
     conn.commit()
+
 
 def match_all_requests(cursor, conn, progress_callback=None):
     all_users = fetch_users_from_db(cursor)
@@ -220,9 +244,16 @@ def match_all_requests(cursor, conn, progress_callback=None):
         for other_user in all_users:
             if other_user.user_id == current_user.user_id:
                 continue
-            if not (set(other_user.classes_can_tutor) & set(current_user.classes_needed)):
+            if not (
+                set(other_user.classes_can_tutor) & set(current_user.classes_needed)
+            ):
                 continue
-            if not (set(current_user.classes_can_tutor) & set(other_user.classes_needed)) and not other_user.show_as_backup:
+            if (
+                not (
+                    set(current_user.classes_can_tutor) & set(other_user.classes_needed)
+                )
+                and not other_user.show_as_backup
+            ):
                 continue
 
             raw_score, tier = get_match_score_and_tier(other_user, current_user)
@@ -231,7 +262,9 @@ def match_all_requests(cursor, conn, progress_callback=None):
         normalized_scores = normalize_scores(match_scores)
         top_10 = sorted(normalized_scores, key=lambda x: -x[1])[:10]
 
-        match_pairs = [(student_id, matched_user_id, score) for matched_user_id, score, _ in top_10]
+        match_pairs = [
+            (student_id, matched_user_id, score) for matched_user_id, score, _ in top_10
+        ]
 
         execute_values(
             cursor,

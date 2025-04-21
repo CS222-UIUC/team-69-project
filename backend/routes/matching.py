@@ -105,7 +105,9 @@ def get_user_matches():
         JOIN 
             users matched ON m.matched_user_id = matched.id
         WHERE
-            m.requester_id = %s OR m.matched_user_id = %s;
+            m.requester_id = %s OR m.matched_user_id = %s
+        ORDER BY 
+            m.match_score DESC;
         """,
         (
             user_id,

@@ -36,6 +36,7 @@ export default function Profile_Match() {
         credentials: 'include',
       }).then((response) => response.json());
     },
+    retry: 2,
   });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -175,12 +176,12 @@ export default function Profile_Match() {
             <i className="fas fa-search"></i>
           </div>
 
-          <div className="toggle">
+          {/* <div className="toggle">
             <label>
               <b>List me as a one-sided tutor</b>
             </label>
             <input type="checkbox" />
-          </div>
+          </div> */}
 
           <button className="find-btn" type="submit">
             Find Matches!
