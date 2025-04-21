@@ -137,25 +137,30 @@ export default function Welcome() {
             >
               Login
             </button>
-
-            <div className="text-center my-4 text-gray-500">OR</div>
-
-            <button className="w-full flex items-center justify-center border py-2 rounded-lg hover:bg-gray-100 text-black">
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/512px-Google_%22G%22_logo.svg.png"
-                alt="Google Logo"
-                className="w-5 h-5 mr-2"
-              />
-              Login with Google
-            </button>
-
-            <p className="text-center text-sm text-gray-600 mt-4">
-              Don't have an account?{' '}
-              <Link to="/signup" id="link" className=" hover:underline">
-                Sign Up
-              </Link>
-            </p>
           </form>
+
+          <div className="text-center my-4 text-gray-500">OR</div>
+
+          <button
+            className="w-full flex items-center justify-center border py-2 rounded-lg hover:bg-gray-100 text-black"
+            onClick={() => {
+              window.location.href = `${import.meta.env.VITE_API_BASE}/oauth/login`;
+            }}
+          >
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/512px-Google_%22G%22_logo.svg.png"
+              alt="Google Logo"
+              className="w-5 h-5 mr-2"
+            />
+            Login with Google
+          </button>
+
+          <p className="text-center text-sm text-gray-600 mt-4">
+            Don't have an account?{' '}
+            <Link to="/signup" id="link" className=" hover:underline">
+              Sign Up
+            </Link>
+          </p>
         </div>
       </div>
 
