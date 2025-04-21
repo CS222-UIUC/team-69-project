@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { useState } from 'react';
 import logo from '../assets/logo.png';
 import './profile_match.css';
 import { z } from 'zod';
@@ -24,6 +25,51 @@ interface Match {
 }
 
 export default function Profile_Match() {
+  //Stuff for adding to lists
+  const [items1, setItems1] = useState<string[]>([]);
+  const [input1, setInput1] = useState<string>('');
+
+  const [items2, setItems2] = useState<string[]>([]);
+  const [input2, setInput2] = useState<string>('');
+
+  const addItem1 = () => {
+    const trimmed = input1.trim();
+    if (trimmed !== '') {
+      setItems1((prev) => [...prev, trimmed]);
+      setInput1('');
+    }
+  };
+
+  const addItem2 = () => {
+    const trimmed = input2.trim();
+    if (trimmed !== '') {
+      setItems2((prev) => [...prev, trimmed]);
+      setInput2('');
+    }
+  };
+
+  const deleteItem1 = (indexToRemove: number) => {
+    setItems1((prev) => prev.filter((_, index) => index !== indexToRemove));
+  };
+
+  const deleteItem2 = (indexToRemove: number) => {
+    setItems2((prev) => prev.filter((_, index) => index !== indexToRemove));
+  };
+
+  const handleKeyPress1 = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addItem1();
+    }
+  };
+
+  const handleKeyPress2 = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addItem2();
+    }
+  };
+  //------
   const {
     data: matches,
     error,
@@ -90,6 +136,8 @@ export default function Profile_Match() {
 
     return alert('Successfully updated profile');
   };
+
+  function ItemList() {}
 
   return (
     <div lang="en">
@@ -160,20 +208,52 @@ export default function Profile_Match() {
 
           <div className="input-with-icon">
             <input
-              name="classes_can_tutor"
               type="text"
+              value={input1}
               placeholder="Can tutor in..."
+              onChange={(e) => setInput1(e.target.value)}
+              onKeyDown={handleKeyPress1}
             />
             <i className="fas fa-search"></i>
+            <ul>
+              {items1.map((item, index) => (
+                <li key={index}>
+                  {item}
+                  <button
+                    onClick={() => deleteItem1(index)}
+                    className="delete-btn"
+                    aria-label={`Delete ${item}`}
+                  >
+                    🗑️
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div className="input-with-icon">
             <input
-              name="classes_needed"
               type="text"
+              value={input2}
               placeholder="Needs help in..."
+              onChange={(e) => setInput2(e.target.value)}
+              onKeyDown={handleKeyPress2}
             />
             <i className="fas fa-search"></i>
+            <ul>
+              {items2.map((item, index) => (
+                <li key={index}>
+                  {item}
+                  <button
+                    onClick={() => deleteItem2(index)}
+                    className="delete-btn"
+                    aria-label={`Delete ${item}`}
+                  >
+                    🗑️
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
 
           {/* <div className="toggle">
