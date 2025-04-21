@@ -248,3 +248,31 @@ def match_all_requests(cursor, conn, progress_callback=None):
             progress_callback(i)
 
     conn.commit()
+
+
+def search_user_by_name(cursor, name):
+    cursor.execute("SELECT * FROM users WHERE display_name ILIKE %s;", ('%' + name + '%',))
+    rows = cursor.fetchall()
+
+    users = []
+    for row in rows: 
+        user = User(
+            user_id=row[0],
+            display_name=row[1],
+            major=row[3],
+            year=row[4],
+            rating=float(row[5]) if row[5] is not None else 0.0,
+            total_ratings=row[6],
+            rating_history=parse_pg_array(row[7]),
+            show_as_backup=row[8],
+            classes_can_tutor=parse_pg_array(row[9]),
+            classes_needed=parse_pg_array(row[10]),
+            recent_interactions=parse_pg_array(row[11]),
+            class_ratings=parse_pg_dict(row[12]),
+        )
+        user.recent_interactions = [
+            datetime.strptime(ts, "%Y-%m-%d %H:%M:%S.%f") if isinstance(ts, str) else ts
+            for ts in user.recent_interactions
+        ]
+        users.append(user)
+    return users 
