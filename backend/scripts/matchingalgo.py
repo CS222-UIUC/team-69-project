@@ -5,19 +5,19 @@ from psycopg2.extras import execute_values
 # Represents a user pulled from DB
 class User:
     def __init__(
-            self,
-            user_id,
-            display_name,
-            major,
-            year,
-            rating,
-            total_ratings,
-            rating_history,
-            show_as_backup,
-            classes_can_tutor,
-            classes_needed,
-            recent_interactions,
-            class_ratings,
+        self,
+        user_id,
+        display_name,
+        major,
+        year,
+        rating,
+        total_ratings,
+        rating_history,
+        show_as_backup,
+        classes_can_tutor,
+        classes_needed,
+        recent_interactions,
+        class_ratings,
     ):
         self.user_id = user_id
         self.display_name = display_name
@@ -56,23 +56,25 @@ class User:
     def get_class_rating(self, class_name):
         return self.class_ratings.get(class_name, self.rating)
 
-# Converts Postgres array to Python list
+
 def parse_pg_array(pg_array):
     return pg_array or []
 
+
 def parse_pg_dict(pg_dict):
     return pg_dict or {}
+
 
 def year_to_int(year):
     year_mapping = {
         "freshman": 1,
         "sophomore": 2,
         "junior": 3,
-        "senior": 4
+        "senior": 4,
     }
     return year_mapping.get(year.lower(), 0)
 
-# Pulls all users from the database
+
 def fetch_users_from_db(cursor):
     cursor.execute("SELECT * FROM users;")
     rows = cursor.fetchall()
@@ -93,13 +95,20 @@ def fetch_users_from_db(cursor):
             class_ratings=parse_pg_dict(row[12]),
         )
         user.recent_interactions = [
-            datetime.strptime(ts, "%Y-%m-%d %H:%M:%S.%f") if isinstance(ts, str) else ts
+            datetime.strptime(ts, "%Y-%m-%d %H:%M:%S.%f")
+            if isinstance(ts, str)
+            else ts
             for ts in user.recent_interactions
         ]
         users.append(user)
     return users
 
-# Score with tier labels for clarity
+
+def get_user_display_map(cursor):
+    cursor.execute("SELECT id, display_name FROM users;")
+    return dict(cursor.fetchall())
+
+
 def get_match_score_and_tier(user, current_user):
     base_rating = user.rating
     penalty = user.get_penalty_multiplier()
@@ -142,14 +151,68 @@ def get_match_score_and_tier(user, current_user):
 
     return score, tier
 
-# Match all students in match_requests
+
+def normalize_scores(match_scores):
+    if not match_scores:
+        return []
+    min_score = min(score for _, score, _ in match_scores)
+    max_score = max(score for _, score, _ in match_scores)
+    if max_score == min_score:
+        return [(uid, 1.0, tier) for uid, _, tier in match_scores]
+    return [
+        (uid, round((score - min_score) / (max_score - min_score), 3), tier)
+        for uid, score, tier in match_scores
+    ]
+
+
+def match_new_user_request(cursor, conn, new_user_id):
+    all_users = fetch_users_from_db(cursor)
+    user_map = {u.user_id: u for u in all_users}
+    display_map = get_user_display_map(cursor)
+    current_user = user_map.get(new_user_id)
+    if not current_user:
+        return
+
+    match_scores = []
+    for other_user in all_users:
+        if other_user.user_id == current_user.user_id:
+            continue
+        if not (set(other_user.classes_can_tutor) & set(current_user.classes_needed)):
+            continue
+        if not (set(current_user.classes_can_tutor) & set(other_user.classes_needed)) and not other_user.show_as_backup:
+            continue
+
+        raw_score, tier = get_match_score_and_tier(other_user, current_user)
+        match_scores.append((other_user.user_id, raw_score, tier))
+
+    normalized_scores = normalize_scores(match_scores)
+    top_10 = sorted(normalized_scores, key=lambda x: -x[1])[:10]
+
+    match_pairs = [(new_user_id, matched_user_id, score) for matched_user_id, score, _ in top_10]
+
+    execute_values(
+        cursor,
+        """
+        INSERT INTO matches (requester_id, matched_user_id, match_score)
+        VALUES %s
+        ON CONFLICT (requester_id, matched_user_id) DO UPDATE
+        SET match_score = EXCLUDED.match_score
+        """,
+        match_pairs,
+    )
+
+    conn.commit()
+
 def match_all_requests(cursor, conn, progress_callback=None):
     all_users = fetch_users_from_db(cursor)
+    user_map = {u.user_id: u for u in all_users}
+    display_map = get_user_display_map(cursor)
+
     cursor.execute("SELECT student_id FROM match_requests;")
     requests = cursor.fetchall()
 
     for i, (student_id,) in enumerate(requests, start=1):
-        current_user = next((u for u in all_users if u.user_id == student_id), None)
+        current_user = user_map.get(student_id)
         if not current_user:
             continue
 
@@ -159,37 +222,26 @@ def match_all_requests(cursor, conn, progress_callback=None):
                 continue
             if not (set(other_user.classes_can_tutor) & set(current_user.classes_needed)):
                 continue
-            if not (set(current_user.classes_can_tutor) & set(other_user.classes_needed)) and not(other_user.show_as_backup):
+            if not (set(current_user.classes_can_tutor) & set(other_user.classes_needed)) and not other_user.show_as_backup:
                 continue
 
-            score, _ = get_match_score_and_tier(other_user, current_user)
-            match_scores.append((other_user.user_id, score))
+            raw_score, tier = get_match_score_and_tier(other_user, current_user)
+            match_scores.append((other_user.user_id, raw_score, tier))
 
-        top_10 = sorted(match_scores, key=lambda x: -x[1])[:10]
+        normalized_scores = normalize_scores(match_scores)
+        top_10 = sorted(normalized_scores, key=lambda x: -x[1])[:10]
 
-        match_pairs = []
-        seen_pairs = set()
-
-        for matched_user_id, score in top_10:
-            pair1 = (student_id, matched_user_id)
-            pair2 = (matched_user_id, student_id)
-
-            if pair1 not in seen_pairs:
-                match_pairs.append((student_id, matched_user_id, score))
-                seen_pairs.add(pair1)
-
-            if pair2 not in seen_pairs:
-                match_pairs.append((matched_user_id, student_id, score))
-                seen_pairs.add(pair2)
+        match_pairs = [(student_id, matched_user_id, score) for matched_user_id, score, _ in top_10]
 
         execute_values(
             cursor,
             """
             INSERT INTO matches (requester_id, matched_user_id, match_score)
             VALUES %s
-            ON CONFLICT DO NOTHING
+            ON CONFLICT (requester_id, matched_user_id) DO UPDATE
+            SET match_score = EXCLUDED.match_score
             """,
-            match_pairs
+            match_pairs,
         )
 
         if progress_callback:

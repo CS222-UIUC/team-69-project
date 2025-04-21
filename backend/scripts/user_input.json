@@ -1,0 +1,18 @@
+{
+  "user_id": 999,
+  "display_name": "Adrian Test",
+  "email": "adrian@example.com",
+  "major": "Computer Science",
+  "year": "Sophomore",
+  "rating": 4.65,
+  "total_ratings": 21,
+  "rating_history": [5, 4, 4, 5, 4],
+  "show_as_backup": true,
+  "classes_can_tutor": ["CS 225", "MATH 241"],
+  "classes_needed": ["CS 374", "STAT 400"],
+  "recent_interactions": ["2024-10-01 12:00:00", "2024-10-12 09:00:00"],
+  "class_ratings": {
+    "CS 225": 4.9,
+    "MATH 241": 4.8
+  }
+}
