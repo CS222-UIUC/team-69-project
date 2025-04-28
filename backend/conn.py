@@ -5,7 +5,7 @@ import psycopg2
 
 config = {
     **dotenv_values(".env"),
-    **dotenv_values(".env.development.local"),
+    **dotenv_values("scripts/.env.development.local"),
     **os.environ,
 }
 conn = psycopg2.connect(
