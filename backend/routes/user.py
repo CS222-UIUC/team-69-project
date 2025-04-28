@@ -61,10 +61,38 @@ def update_user_profile():
 
     return "Updated user successfully", 200
 
+
+@user_bp.route("/user/@me", methods=["GET"])
+@login_required
+def get_self():
+    user_id = current_user.id
+
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT display_name, major, year, classes_can_tutor, classes_needed FROM users WHERE id = %s;",
+        (user_id,),
+    )
+    found_user = cursor.fetchone()
+    cursor.close()
+
+    if not found_user:
+        return jsonify({"error": "User not found"}), 400
+
+    return jsonify(
+        {
+            "display_name": found_user[0],
+            "major": found_user[1],
+            "year": found_user[2],
+            "classes_can_tutor": found_user[3],
+            "classes_needed": found_user[4],
+        }
+    )
+
+
 @user_bp.route("/search", methods=["GET"])
 @login_required
 def search_users():
-    name = request.args.get('name') 
+    name = request.args.get("name")
     if not name:
         return jsonify({"error": "No 'name' parameter provided"}), 400
 
@@ -77,14 +105,16 @@ def search_users():
 
     result = []
     for user in users:
-        result.append({
-            "user_id": user.user_id,
-            "display_name": user.display_name,
-            "major": user.major,
-            "year": user.year,
-            "rating": user.rating,
-            "total_ratings": user.total_ratings,
-        })
+        result.append(
+            {
+                "user_id": user.user_id,
+                "display_name": user.display_name,
+                "major": user.major,
+                "year": user.year,
+                "rating": user.rating,
+                "total_ratings": user.total_ratings,
+            }
+        )
 
     cursor.close()
     return jsonify(result), 200
