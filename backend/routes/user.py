@@ -62,15 +62,17 @@ def update_user_profile():
     return "Updated user successfully", 200
 
 @user_bp.route("/search", methods=["GET"])
+@login_required
 def search_users():
     name = request.args.get('name') 
     if not name:
         return jsonify({"error": "No 'name' parameter provided"}), 400
 
     cursor = conn.cursor()
-    users = search_user_by_name(cursor, name)
+    users = search_user_by_name(cursor, name, current_user)
 
     if not users:
+        cursor.close()
         return jsonify({"message": "No users found"}), 404
 
     result = []
