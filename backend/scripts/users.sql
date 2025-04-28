@@ -25,3 +25,10 @@ CREATE TABLE IF NOT EXISTS oauth_users (
   refresh_token TEXT,
   expires_at TIMESTAMP
 );
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+-- GIN index on display_name
+CREATE INDEX idx_users_display_name_trgm
+ON users
+USING GIN (display_name gin_trgm_ops);

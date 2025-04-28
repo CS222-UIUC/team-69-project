@@ -10,32 +10,64 @@ from backend.scripts.matchingalgo import (
 from rapidfuzz import fuzz
 
 
-def search_user_by_name(cursor, name):
-    cursor.execute("SELECT * FROM users WHERE display_name ILIKE %s;", ('%' + name + '%',))
+
+def search_user_by_name(cursor, name, current_user):
+    limit = 50
+    cursor.execute(
+        """
+        SELECT id, display_name, major, year, rating, total_ratings, rating_history,
+               show_as_backup, classes_can_tutor, classes_needed, recent_interactions, class_ratings
+        FROM users
+        WHERE display_name ILIKE %s
+        LIMIT %s;
+        """,
+        ('%' + name + '%', limit)
+    )
+
     rows = cursor.fetchall()
 
     users = []
     for row in rows:
+        if row[0] == current_user.user_id:
+            continue  # skip self
+
         user = User(
             user_id=row[0],
             display_name=row[1],
-            major=row[3],
-            year=row[4],
-            rating=float(row[5]) if row[5] is not None else 0.0,
-            total_ratings=row[6],
-            rating_history=parse_pg_array(row[7]),
-            show_as_backup=row[8],
-            classes_can_tutor=parse_pg_array(row[9]),
-            classes_needed=parse_pg_array(row[10]),
-            recent_interactions=parse_pg_array(row[11]),
-            class_ratings=parse_pg_dict(row[12]),
+            major=row[2],
+            year=row[3],
+            rating=float(row[4]) if row[4] is not None else 0.0,
+            total_ratings=row[5],
+            rating_history=parse_pg_array(row[6]),
+            show_as_backup=row[7],
+            classes_can_tutor=parse_pg_array(row[8]),
+            classes_needed=parse_pg_array(row[9]),
+            recent_interactions=parse_pg_array(row[10]),
+            class_ratings=parse_pg_dict(row[11]),
         )
+
         user.recent_interactions = [
             datetime.strptime(ts, "%Y-%m-%d %H:%M:%S.%f") if isinstance(ts, str) else ts
             for ts in user.recent_interactions
         ]
+
         users.append(user)
-    return users
+
+    #sorts the matching names based on match score
+    user_scores = []
+    for user in users:
+        if not (set(user.classes_can_tutor) & set(current_user.classes_needed)):
+            continue
+        if not (set(current_user.classes_can_tutor) & set(user.classes_needed)) and not user.show_as_backup:
+            continue
+
+        score, _ = get_match_score_and_tier(user, current_user)
+        user_scores.append((user, score))
+
+    user_scores.sort(key=lambda x: -x[1])
+
+    sorted_users = [user for user, _ in user_scores]
+    return sorted_users
 
 
 def search_all_users_by_subject(cursor, conn, current_user_id, subject_query):
