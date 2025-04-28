@@ -280,5 +280,3 @@ def match_all_requests(cursor, conn, progress_callback=None):
             progress_callback(i)
 
     conn.commit()
-
-

@@ -48,6 +48,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.session_protection = "strong"
 
+
 # === User Loader for Flask-Login ===
 def get_user(id):
     cursor = conn.cursor()
@@ -56,18 +57,20 @@ def get_user(id):
     cursor.close()
     return found_user
 
+
 @login_manager.user_loader
 def user_loader(id: int):
     user = get_user(id)
     if user:
         user_model = User()
-        user_model.id = id
+        user_model.id = user[0]
         return user_model
     return None
+
 
 # === Initialize Chat Events ===
 init_chat_events(socketio)
 
 # === Run App ===
 if __name__ == "__main__":
-    socketio.run(app, debug=DEV_MODE, port=5050)
+    socketio.run(app, debug=DEV_MODE, port=5000)

@@ -64,7 +64,7 @@ def update_user_profile():
 @user_bp.route("/search", methods=["GET"])
 @login_required
 def search_users():
-    name = request.args.get('name')
+    name = request.args.get('name') 
     if not name:
         return jsonify({"error": "No 'name' parameter provided"}), 400
 

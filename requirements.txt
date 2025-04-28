@@ -7,7 +7,7 @@ psycopg2
 bcrypt
 pytest-order
 pytest-dependency
-zon==1.0.0
+zon
 flask-login
 oauthlib
 requests
