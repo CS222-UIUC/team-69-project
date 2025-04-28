@@ -115,7 +115,7 @@ export default function Profile_Match() {
 
     setItems1(user_data.classes_can_tutor);
     setItems2(user_data.classes_needed);
-  }, [user_data, classesCanTutorIn, classesNeeded]);
+  }, [user_data]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -218,7 +218,10 @@ export default function Profile_Match() {
               ></button>
             </h2>
           </div>
-          <div className="profile-image"></div>
+          <img
+            className="profile-image"
+            src={`https://api.dicebear.com/7.x/bottts/svg?seed=user`}
+          ></img>
           <input
             className="inbox"
             name="display_name"
@@ -330,7 +333,10 @@ export default function Profile_Match() {
                     className="card relative flex flex-col justify-between"
                     key={match.display_name}
                   >
-                    <div className="card-img"></div>
+                    <img
+                      className="card-img"
+                      src={`https://api.dicebear.com/7.x/bottts/svg?seed=${match.display_name}`}
+                    ></img>
                     <div>
                       <h3>{match.display_name}</h3>
                       <p>

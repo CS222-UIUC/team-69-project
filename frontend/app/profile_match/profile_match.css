@@ -73,7 +73,7 @@ nav a {
   margin: 15px auto;
 }
 
-input[type='text'] {
+.profile_match input[type='text'] {
   display: block;
   width: 100%;
   padding: 8px;
@@ -144,7 +144,7 @@ input::placeholder {
   color: white;
   padding: 10px;
   border: none;
-  width: 60%;
+  width: max(60%, 12ch);
   border-radius: 6px;
   font-weight: bold;
   height: 3rem;
@@ -152,7 +152,15 @@ input::placeholder {
 }
 
 .matches-section {
-  width: 65%;
+  width: 90%;
+}
+
+.input-with-icon input {
+  margin-bottom: 8px !important;
+}
+
+.input-with-icon ul:last-of-type {
+  margin-bottom: 15px !important;
 }
 
 .matches-section h2 {
