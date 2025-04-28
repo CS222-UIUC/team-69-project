@@ -4,6 +4,8 @@ from psycopg2 import connect
 from dotenv import dotenv_values
 import os
 
+from backend.scripts.matchingalgo import parse_pg_array
+
 # === Environment Configuration ===
 config = {
     **dotenv_values(".env"),
@@ -20,6 +22,104 @@ def connect_db():
         password=config["POSTGRES_DATABASE_PASSWORD"],
         port=config["POSTGRES_DATABASE_PORT"]
     )
+
+
+import openai
+from datetime import datetime
+
+openai.api_key = config["OPENAI_API_KEY"] # you aint getting this hehe
+
+
+def generate_starter_message(user1_id, user2_id, match_id, save_to_db=True):
+    conn = connect_db()
+    cur = conn.cursor()
+
+    # Fetch user1 and user2 info
+    cur.execute("""
+        SELECT id, display_name, major, year, classes_can_tutor, classes_needed
+        FROM users
+        WHERE id IN (%s, %s);
+    """, (user1_id, user2_id))
+    users = cur.fetchall()
+    if len(users) != 2:
+        cur.close()
+        conn.close()
+        return "Hi there! Excited to connect with you!"
+
+    user1, user2 = users
+    user1_display_name = user1[1]
+    user2_display_name = user2[1]
+    user1_first_name = user1_display_name.split()[0].capitalize() if user1_display_name else "I"
+
+    user1_classes = set(parse_pg_array(user1[4]) + parse_pg_array(user1[5]))
+    user2_classes = set(parse_pg_array(user2[4]) + parse_pg_array(user2[5]))
+    shared_classes = list(user1_classes & user2_classes)
+
+    shared_major = user1[2] == user2[2] and user1[2]  # major
+    shared_year = user1[3] == user2[3] and user1[3]  # year
+
+    # Prompt Construction
+    prompt_parts = []
+
+    if shared_classes:
+        prompt_parts.append(f"You both are connected through classes like {', '.join(shared_classes)}.")
+    if shared_major:
+        prompt_parts.append(f"You also share the same major: {shared_major}.")
+    if shared_year:
+        prompt_parts.append(f"You are both {shared_year}s.")
+
+    prompt_context = " ".join(prompt_parts)
+    if not prompt_context:
+        prompt_context = "You matched with a fellow student at your university."
+
+    full_prompt = f"""
+You are helping a university student named {user1_first_name} break the ice in a chat with another student named {user2_display_name}.
+
+Context:
+{prompt_context}
+
+Write a **friendly, short, casual first message** that:
+- Starts by introducing yourself ("Hey, I'm {user1_first_name}!")
+- Mentions common classes/major/year if relevant
+- Stays within **2-3 lines maximum**
+- No emojis, no jokes, no quotes.
+
+Keep the tone friendly and respectful.
+"""
+
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system",
+                 "content": "You are a helpful, casual university student writing short, friendly messages."},
+                {"role": "user", "content": full_prompt}
+            ],
+            temperature=0.6,
+            max_tokens=100
+        )
+
+        starter_message = response['choices'][0]['message']['content'].strip()
+
+        if save_to_db and starter_message:
+            # Save the starter message into the chat_messages table
+            cur.execute("""
+                INSERT INTO chat_messages (match_id, sender_id, message_text, created_at)
+                VALUES (%s, NULL, %s, %s);
+            """, (match_id, starter_message, datetime.now()))
+            conn.commit()
+
+        cur.close()
+        conn.close()
+
+        return starter_message
+
+    except Exception as e:
+        print(f"ChatGPT Error: {e}")
+        cur.close()
+        conn.close()
+        return f"Hi, I'm {user1_first_name}! Excited to connect with you!"
+
 
 # === DB Utilities ===
 def get_display_name(user_id):
@@ -134,3 +234,21 @@ def init_chat_events(socketio):
             return
         leave_room(match_id)
         send({"sender": "", "message": f"{get_display_name(user_id)} has left the chat"}, to=match_id)
+
+    @socketio.on("regenerate_starter")
+    def handle_regenerate_starter(data):
+        from flask import session
+        user_id = session.get("user_id")
+        match_id = session.get("match_id")
+        other_user_id = data.get("other_user_id")
+
+        if not user_id or not match_id or not other_user_id:
+            return
+
+        new_starter_message = generate_starter_message(user_id, other_user_id, match_id, save_to_db=True)
+
+        send({
+            "sender": "",
+            "message": new_starter_message,
+            "type": "starter"
+        }, to=match_id)
