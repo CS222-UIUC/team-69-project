@@ -151,6 +151,20 @@ input::placeholder {
   font-size: 1.5rem;
 }
 
+.search-by-name {
+  position: relative;
+  width: 100%;
+}
+.search-by-name i {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  color: #555;
+}
+.search-by-name input {
+  width: 30rem;
+}
+
 .matches-section {
   width: 65%;
 }
