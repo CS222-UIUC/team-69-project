@@ -217,9 +217,9 @@ export default function Profile_Match() {
             </a>
           </li>
           <li>
-            <a href="#" id="link">
+            <Link to={'/chat'} id="link">
               Messages
-            </a>
+            </Link>
           </li>
           <li>
             <a href="#" id="link">

@@ -2,20 +2,17 @@ from flask_socketio import join_room, leave_room, send
 from datetime import datetime
 from psycopg2 import connect
 from dotenv import dotenv_values
+from flask import session
 import os
 
 from scripts.matchingalgo import parse_pg_array
 
-# === Environment Configuration ===
-config = {
-    **dotenv_values(".env"),
-    **dotenv_values(".env.development.local"),
-    **os.environ,
-}
-
+from conn import config
 
 # === Connect to DB ===
 def connect_db():
+    # === Environment Configuration ===
+
     return connect(
         database=config["POSTGRES_DATABASE_NAME"],
         host=config["POSTGRES_DATABASE_HOST"],
@@ -243,8 +240,6 @@ def init_chat_events(socketio):
 
     @socketio.on("connect")
     def handle_connect():
-        from flask import session
-
         user_id = session.get("user_id")
         match_id = session.get("match_id")
         if not user_id or not match_id:
@@ -260,13 +255,13 @@ def init_chat_events(socketio):
 
     @socketio.on("message")
     def handle_message(data):
-        from flask import session
-
         user_id = session.get("user_id")
         match_id = session.get("match_id")
+
         if not user_id or not match_id:
             return
         insert_message(match_id, user_id, data["message"])
+        
         send(
             {"sender": get_display_name(user_id), "message": data["message"]},
             to=match_id,
@@ -274,8 +269,6 @@ def init_chat_events(socketio):
 
     @socketio.on("disconnect")
     def handle_disconnect():
-        from flask import session
-
         user_id = session.get("user_id")
         match_id = session.get("match_id")
         if not user_id or not match_id:
@@ -288,8 +281,6 @@ def init_chat_events(socketio):
 
     @socketio.on("regenerate_starter")
     def handle_regenerate_starter(data):
-        from flask import session
-
         user_id = session.get("user_id")
         match_id = session.get("match_id")
         other_user_id = data.get("other_user_id")

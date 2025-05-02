@@ -1,4 +1,5 @@
-from flask import Blueprint, request, render_template, redirect, url_for, session
+from flask import Blueprint, request, session, jsonify
+from flask_login import current_user, login_required
 from scripts.chat_interface import (
     get_display_name,
     get_match_id_between,
@@ -8,9 +9,10 @@ from scripts.chat_interface import (
 
 chat_bp = Blueprint("chat", __name__, url_prefix="/chat")
 
-@chat_bp.route("/", methods=["GET"])
+@chat_bp.route("/join", methods=["POST"])
+@login_required
 def index():
-    user_id = int(request.args.get("u", 72))
+    user_id = current_user.id
     other_user_id = request.args.get("m")
 
     session["user_id"] = user_id
@@ -25,21 +27,22 @@ def index():
     elif "match_id" not in session:
         return "No match selected", 400
 
-    return redirect(url_for("chat.room"))
+    return "Successfully joined room", 200
 
-@chat_bp.route("/room")
+@chat_bp.route('/chats', methods=["GET"])
+@login_required
+def get_chats():
+    user_id = current_user.id
+    matches = get_matches_for_user(user_id)
+
+    return jsonify(matches), 200
+
+@chat_bp.route("/messages", methods=["GET"])
+@login_required
 def room():
     user_id = session.get("user_id")
     match_id = session.get("match_id")
     if not user_id or not match_id:
-        return redirect(url_for("chat.index"))
-
-    matched_users = get_matches_for_user(user_id)
-
-    return render_template(
-        "room.html",
-        room=match_id,
-        user=get_display_name(user_id),
-        messages=fetch_messages(match_id),
-        users=matched_users
-    )
+        return "User is not in a chat", 400
+        
+    return fetch_messages(match_id)

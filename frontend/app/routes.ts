@@ -5,4 +5,5 @@ export default [
   route('signup', './sign_up/sign_up.tsx'),
   route('login', './welcome/welcome.tsx'),
   route('matches', './profile_match/profile_match.tsx'),
+  route('chat', './chat/chat.tsx'),
 ] satisfies RouteConfig;
