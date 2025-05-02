@@ -5,7 +5,7 @@ import hero_img from './hero_img.png';
 import how_it_works from './how_it_works.png';
 import { useEffect } from 'react';
 
-export function Home_Pg() {
+export default function Home_Pg() {
   const navigate = useNavigate();
 
   useEffect(() => {
