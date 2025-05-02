@@ -318,6 +318,13 @@ export default function Profile_Match() {
           <button className="find-btn mt-5 leading-none" type="submit">
             Find Matches!
           </button>
+          <div>
+            <h2>OR</h2>
+          </div>
+          <div className="search-by-name">
+            <input type="text" placeholder="Search by Name" />
+            <i className="fas fa-search"></i>
+          </div>
         </form>
 
         <section className="matches-section">
