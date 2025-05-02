@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 
-# from scripts.matchingalgo import search_user_by_name
+from scripts.search import search_user_by_name
 import zon
 
 from conn import conn
@@ -90,35 +90,32 @@ def get_self():
     )
 
 
-# can't find search user by name
-# TODO: fix
+@user_bp.route("/search", methods=["GET"])
+@login_required
+def search_users():
+    name = request.args.get("name")
+    if not name:
+        return jsonify({"error": "No 'name' parameter provided"}), 400
 
-# @user_bp.route("/search", methods=["GET"])
-# @login_required
-# def search_users():
-#     name = request.args.get("name")
-#     if not name:
-#         return jsonify({"error": "No 'name' parameter provided"}), 400
+    cursor = conn.cursor()
+    users = search_user_by_name(cursor, name, current_user)
 
-#     cursor = conn.cursor()
-#     users = search_user_by_name(cursor, name, current_user)
+    if not users:
+        cursor.close()
+        return jsonify({"message": "No users found"}), 404
 
-#     if not users:
-#         cursor.close()
-#         return jsonify({"message": "No users found"}), 404
+    result = []
+    for user in users:
+        result.append(
+            {
+                "user_id": user.user_id,
+                "display_name": user.display_name,
+                "major": user.major,
+                "year": user.year,
+                "rating": user.rating,
+                "total_ratings": user.total_ratings,
+            }
+        )
 
-#     result = []
-#     for user in users:
-#         result.append(
-#             {
-#                 "user_id": user.user_id,
-#                 "display_name": user.display_name,
-#                 "major": user.major,
-#                 "year": user.year,
-#                 "rating": user.rating,
-#                 "total_ratings": user.total_ratings,
-#             }
-#         )
-
-#     cursor.close()
-#     return jsonify(result), 200
+    cursor.close()
+    return jsonify(result), 200
