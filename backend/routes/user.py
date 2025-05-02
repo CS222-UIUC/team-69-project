@@ -112,8 +112,8 @@ def search_users():
                 "display_name": user.display_name,
                 "major": user.major,
                 "year": user.year,
-                "rating": user.rating,
-                "total_ratings": user.total_ratings,
+                "classes_can_tutor": user.classes_can_tutor,
+                "classes_needed": user.classes_needed,
             }
         )
 

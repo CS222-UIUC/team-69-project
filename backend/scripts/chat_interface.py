@@ -28,7 +28,7 @@ def connect_db():
 import openai
 from datetime import datetime
 
-openai.api_key = config["OPENAI_API_KEY"]  # you aint getting this hehe
+openai.api_key = config.get("OPENAI_API_KEY") or ""  # you aint getting this hehe
 
 
 def generate_starter_message(user1_id, user2_id, match_id, save_to_db=True):

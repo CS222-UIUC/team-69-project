@@ -12,3 +12,6 @@ flask-login
 oauthlib
 requests
 flask-cors
+flask-socketio
+rapidfuzz
+openai
