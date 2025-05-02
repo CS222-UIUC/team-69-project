@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import logo from '../assets/logo.png';
 import './profile_match.css';
 import { z } from 'zod';
@@ -9,8 +9,6 @@ const profileSchema = z.object({
   display_name: z.string(),
   major: z.string().max(255),
   year: z.string(),
-  classes_can_tutor: z.string().optional(), // both of these will eventually be arrays as input, but that requires a whole new input component
-  classes_needed: z.string().optional(),
 });
 
 const valid_years = ['freshman', 'sophomore', 'junior', 'senior'];
@@ -24,13 +22,27 @@ interface Match {
   rating: string;
 }
 
+interface UserData {
+  display_name: string;
+  classes_can_tutor: string[];
+  classes_needed: string[];
+  major: string;
+  year: string;
+}
+
 export default function Profile_Match() {
   //Stuff for adding to lists
-  const [items1, setItems1] = useState<string[]>([]);
+  const [classesCanTutorIn, setItems1] = useState<string[]>([]);
   const [input1, setInput1] = useState<string>('');
 
-  const [items2, setItems2] = useState<string[]>([]);
+  const [classesNeeded, setItems2] = useState<string[]>([]);
   const [input2, setInput2] = useState<string>('');
+
+  const displayNameRef = useRef<HTMLInputElement | null>(null);
+  const majorRef = useRef<HTMLInputElement | null>(null);
+  const yearRef = useRef<HTMLInputElement | null>(null);
+
+  const [enabled, setEnabled] = useState<boolean>(false);
 
   const addItem1 = () => {
     const trimmed = input1.trim();
@@ -69,7 +81,7 @@ export default function Profile_Match() {
       addItem2();
     }
   };
-  //------
+
   const {
     data: matches,
     error,
@@ -84,6 +96,26 @@ export default function Profile_Match() {
     },
     retry: 2,
   });
+
+  const { data: user_data } = useQuery({
+    queryKey: ['user-data'],
+    queryFn: async (): Promise<UserData> => {
+      return fetch(`${import.meta.env.VITE_API_BASE}/user/@me`, {
+        credentials: 'include',
+      }).then((response) => response.json());
+    },
+  });
+
+  useEffect(() => {
+    if (!user_data) return;
+    if (displayNameRef.current)
+      displayNameRef.current.value = user_data.display_name;
+    if (yearRef.current) yearRef.current.value = user_data.year;
+    if (majorRef.current) majorRef.current.value = user_data.major;
+
+    setItems1(user_data.classes_can_tutor);
+    setItems2(user_data.classes_needed);
+  }, [user_data]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -102,8 +134,8 @@ export default function Profile_Match() {
 
     // temp hack until the input is redone
     const dataToSend: any = { ...verifiedData };
-    dataToSend['classes_can_tutor'] = [dataToSend['classes_can_tutor']];
-    dataToSend['classes_needed'] = [dataToSend['classes_needed']];
+    dataToSend['classes_can_tutor'] = classesCanTutorIn || [];
+    dataToSend['classes_needed'] = classesNeeded || [];
 
     const response = await fetch(`${import.meta.env.VITE_API_BASE}/user`, {
       method: 'PATCH',
@@ -134,17 +166,11 @@ export default function Profile_Match() {
     }
     refetch();
 
-    return alert('Successfully updated profile');
+    // return alert('Successfully updated profile');
   };
 
-  function ItemList() {}
-
   return (
-    <div lang="en">
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      />
+    <div className="profile_match">
       <nav className="flex justify-between items-center px-8 py-4 bg-white shadow-md">
         <img src={logo} className="w-32" />
         <ul className="flex space-x-6 text-gray-700">
@@ -179,31 +205,46 @@ export default function Profile_Match() {
         </div>
       </nav>
 
-      <main className="container text-black w-screen">
+      <main className="container text-black w-screen max-w-full">
         <form className="profile-section" onSubmit={handleSubmit}>
-          <div className="profile-box">
-            <h2>
-              Your Profile <i className="fas fa-pen-square"></i>
+          <div className="profile-box flex items-center space-x-2">
+            <h2 className="h-full pl-2">
+              Your Profile
+              <button
+                className="fas fa-pen-square"
+                style={{ color: enabled ? 'black' : 'gray' }}
+                onClick={() => setEnabled(!enabled)}
+                type="button"
+              ></button>
             </h2>
           </div>
-          <div className="profile-image"></div>
+          <img
+            className="profile-image"
+            src={`https://api.dicebear.com/7.x/bottts/svg?seed=user`}
+          ></img>
           <input
             className="inbox"
             name="display_name"
             type="text"
             placeholder="Name:"
+            ref={displayNameRef}
+            disabled={!enabled}
           />
           <input
             className="inbox"
             name="major"
             type="text"
             placeholder="Major:"
+            ref={majorRef}
+            disabled={!enabled}
           />
           <input
             className="inbox"
             name="year"
             type="text"
             placeholder="Year:"
+            ref={yearRef}
+            disabled={!enabled}
           />
 
           <div className="input-with-icon">
@@ -213,16 +254,22 @@ export default function Profile_Match() {
               placeholder="Can tutor in..."
               onChange={(e) => setInput1(e.target.value)}
               onKeyDown={handleKeyPress1}
+              disabled={!enabled}
             />
             <i className="fas fa-search"></i>
             <ul>
-              {items1.map((item, index) => (
-                <li key={index}>
+              {classesCanTutorIn.map((item, index) => (
+                <li
+                  key={index}
+                  style={{ backgroundColor: enabled ? '#f0f0f0' : '#d3d3d3' }}
+                >
                   {item}
                   <button
                     onClick={() => deleteItem1(index)}
                     className="delete-btn"
                     aria-label={`Delete ${item}`}
+                    type="button"
+                    disabled={!enabled}
                   >
                     🗑️
                   </button>
@@ -238,16 +285,21 @@ export default function Profile_Match() {
               placeholder="Needs help in..."
               onChange={(e) => setInput2(e.target.value)}
               onKeyDown={handleKeyPress2}
+              disabled={!enabled}
             />
             <i className="fas fa-search"></i>
             <ul>
-              {items2.map((item, index) => (
-                <li key={index}>
+              {classesNeeded.map((item, index) => (
+                <li
+                  key={index}
+                  style={{ backgroundColor: enabled ? '#f0f0f0' : '#d3d3d3' }}
+                >
                   {item}
                   <button
                     onClick={() => deleteItem2(index)}
                     className="delete-btn"
                     aria-label={`Delete ${item}`}
+                    disabled={!enabled}
                   >
                     🗑️
                   </button>
@@ -263,7 +315,7 @@ export default function Profile_Match() {
             <input type="checkbox" />
           </div> */}
 
-          <button className="find-btn" type="submit">
+          <button className="find-btn mt-5 leading-none" type="submit">
             Find Matches!
           </button>
         </form>
@@ -277,26 +329,34 @@ export default function Profile_Match() {
               matches &&
               matches.map((match) => {
                 return (
-                  <div className="card" key={match.display_name}>
-                    <div className="card-img"></div>
-                    <h3>{match.display_name}</h3>
-                    <p>
-                      <strong>Can tutor in:</strong>{' '}
-                      {match.classes_can_tutor.join(', ')}
-                    </p>
-                    <p>
-                      <strong>Needs help in:</strong>{' '}
-                      {match.classes_needed.join(', ')}
-                    </p>
-                    <p>
-                      <strong>Major:</strong> {match.major}
-                    </p>
-                    <p>
-                      <strong>Year:</strong> {match.year}
-                    </p>
-                    <p>
-                      <strong>Rating:</strong> {match.rating}
-                    </p>
+                  <div
+                    className="card relative flex flex-col justify-between"
+                    key={match.display_name}
+                  >
+                    <img
+                      className="card-img"
+                      src={`https://api.dicebear.com/7.x/bottts/svg?seed=${match.display_name}`}
+                    ></img>
+                    <div>
+                      <h3>{match.display_name}</h3>
+                      <p>
+                        <strong>Can tutor in:</strong>{' '}
+                        {match.classes_can_tutor.join(', ')}
+                      </p>
+                      <p>
+                        <strong>Needs help in:</strong>{' '}
+                        {match.classes_needed.join(', ')}
+                      </p>
+                      <p>
+                        <strong>Major:</strong> {match.major}
+                      </p>
+                      <p>
+                        <strong>Year:</strong> {match.year}
+                      </p>
+                      <p>
+                        <strong>Rating:</strong> {match.rating}
+                      </p>
+                    </div>
                     <button className="chat-btn">Chat Now!</button>
                   </div>
                 );

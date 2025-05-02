@@ -48,7 +48,7 @@ nav a {
 }
 
 .profile-section {
-  width: 35%;
+  width: 30%;
   background: #c7e4e6;
   padding: 20px;
   border-radius: 10px;
@@ -73,7 +73,7 @@ nav a {
   margin: 15px auto;
 }
 
-input[type='text'] {
+.profile_match input[type='text'] {
   display: block;
   width: 100%;
   padding: 8px;
@@ -144,7 +144,7 @@ input::placeholder {
   color: white;
   padding: 10px;
   border: none;
-  width: 60%;
+  width: max(60%, 12ch);
   border-radius: 6px;
   font-weight: bold;
   height: 3rem;
@@ -152,13 +152,21 @@ input::placeholder {
 }
 
 .matches-section {
-  width: 65%;
+  width: 90%;
+}
+
+.input-with-icon input {
+  margin-bottom: 8px !important;
+}
+
+.input-with-icon ul:last-of-type {
+  margin-bottom: 15px !important;
 }
 
 .matches-section h2 {
   text-align: center;
   font-size: 2rem;
-  padding-bottom: 4rem;
+  padding-bottom: 1rem;
   font-weight: 500;
 }
 
@@ -197,4 +205,8 @@ input::placeholder {
   border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
+}
+
+.profile_match input:disabled {
+  background-color: #e0e0e0;
 }

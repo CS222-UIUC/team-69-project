@@ -4,7 +4,7 @@ import Profile_Match from '~/profile_match/profile_match';
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: 'New React Router App' },
+    { title: 'TutorSwap' },
     { name: 'description', content: 'Welcome to React Router!' },
   ];
 }
