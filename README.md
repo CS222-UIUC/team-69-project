@@ -107,8 +107,8 @@ Enables real-time messaging between matched users. Messages are stored by match 
 
 1. **Clone the repository**
     ```bash
-    git clone https://github.com/CS222-UIUC/course-project-group-5.git
-    cd course-project-group-5
+    git clone https://github.com/CS222-UIUC/team-69-project.git
+    cd team-69-project
     ```
 
 2. **Frontend setup**
