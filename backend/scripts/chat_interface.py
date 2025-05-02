@@ -4,7 +4,7 @@ from psycopg2 import connect
 from dotenv import dotenv_values
 import os
 
-from backend.scripts.matchingalgo import parse_pg_array
+from scripts.matchingalgo import parse_pg_array
 
 # === Environment Configuration ===
 config = {
@@ -13,6 +13,7 @@ config = {
     **os.environ,
 }
 
+
 # === Connect to DB ===
 def connect_db():
     return connect(
@@ -20,14 +21,14 @@ def connect_db():
         host=config["POSTGRES_DATABASE_HOST"],
         user=config["POSTGRES_DATABASE_USER"],
         password=config["POSTGRES_DATABASE_PASSWORD"],
-        port=config["POSTGRES_DATABASE_PORT"]
+        port=config["POSTGRES_DATABASE_PORT"],
     )
 
 
 import openai
 from datetime import datetime
 
-openai.api_key = config["OPENAI_API_KEY"] # you aint getting this hehe
+openai.api_key = config["OPENAI_API_KEY"]  # you aint getting this hehe
 
 
 def generate_starter_message(user1_id, user2_id, match_id, save_to_db=True):
@@ -35,11 +36,14 @@ def generate_starter_message(user1_id, user2_id, match_id, save_to_db=True):
     cur = conn.cursor()
 
     # Fetch user1 and user2 info
-    cur.execute("""
+    cur.execute(
+        """
         SELECT id, display_name, major, year, classes_can_tutor, classes_needed
         FROM users
         WHERE id IN (%s, %s);
-    """, (user1_id, user2_id))
+    """,
+        (user1_id, user2_id),
+    )
     users = cur.fetchall()
     if len(users) != 2:
         cur.close()
@@ -49,7 +53,9 @@ def generate_starter_message(user1_id, user2_id, match_id, save_to_db=True):
     user1, user2 = users
     user1_display_name = user1[1]
     user2_display_name = user2[1]
-    user1_first_name = user1_display_name.split()[0].capitalize() if user1_display_name else "I"
+    user1_first_name = (
+        user1_display_name.split()[0].capitalize() if user1_display_name else "I"
+    )
 
     user1_classes = set(parse_pg_array(user1[4]) + parse_pg_array(user1[5]))
     user2_classes = set(parse_pg_array(user2[4]) + parse_pg_array(user2[5]))
@@ -62,7 +68,9 @@ def generate_starter_message(user1_id, user2_id, match_id, save_to_db=True):
     prompt_parts = []
 
     if shared_classes:
-        prompt_parts.append(f"You both are connected through classes like {', '.join(shared_classes)}.")
+        prompt_parts.append(
+            f"You both are connected through classes like {', '.join(shared_classes)}."
+        )
     if shared_major:
         prompt_parts.append(f"You also share the same major: {shared_major}.")
     if shared_year:
@@ -91,22 +99,27 @@ Keep the tone friendly and respectful.
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
-                {"role": "system",
-                 "content": "You are a helpful, casual university student writing short, friendly messages."},
-                {"role": "user", "content": full_prompt}
+                {
+                    "role": "system",
+                    "content": "You are a helpful, casual university student writing short, friendly messages.",
+                },
+                {"role": "user", "content": full_prompt},
             ],
             temperature=0.6,
-            max_tokens=100
+            max_tokens=100,
         )
 
-        starter_message = response['choices'][0]['message']['content'].strip()
+        starter_message = response["choices"][0]["message"]["content"].strip()
 
         if save_to_db and starter_message:
             # Save the starter message into the chat_messages table
-            cur.execute("""
+            cur.execute(
+                """
                 INSERT INTO chat_messages (match_id, sender_id, message_text, created_at)
                 VALUES (%s, NULL, %s, %s);
-            """, (match_id, starter_message, datetime.now()))
+            """,
+                (match_id, starter_message, datetime.now()),
+            )
             conn.commit()
 
         cur.close()
@@ -131,35 +144,48 @@ def get_display_name(user_id):
     conn.close()
     return row[0] if row else f"User {user_id}"
 
+
 def fetch_messages(match_id):
     conn = connect_db()
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         SELECT sender_id, message_text, created_at
         FROM chat_messages
         WHERE match_id = %s
         ORDER BY created_at ASC;
-    """, (match_id,))
+    """,
+        (match_id,),
+    )
     messages = cur.fetchall()
     cur.close()
     conn.close()
-    return [{"sender": get_display_name(sender), "message": msg} for sender, msg, _ in messages]
+    return [
+        {"sender": get_display_name(sender), "message": msg}
+        for sender, msg, _ in messages
+    ]
+
 
 def insert_message(match_id, sender_id, text):
     conn = connect_db()
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         INSERT INTO chat_messages (match_id, sender_id, message_text, created_at)
         VALUES (%s, %s, %s, %s);
-    """, (match_id, sender_id, text, datetime.now()))
+    """,
+        (match_id, sender_id, text, datetime.now()),
+    )
     conn.commit()
     cur.close()
     conn.close()
 
+
 def get_matches_for_user(user_id):
     conn = connect_db()
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         SELECT u.id, u.display_name, 'You matched with them' AS direction
         FROM matches m
         JOIN users u ON u.id = m.matched_user_id
@@ -171,33 +197,46 @@ def get_matches_for_user(user_id):
         FROM matches m
         JOIN users u ON u.id = m.requester_id
         WHERE m.matched_user_id = %s;
-    """, (user_id, user_id))
-    results = [{"id": uid, "name": name, "direction": direction} for uid, name, direction in cur.fetchall()]
+    """,
+        (user_id, user_id),
+    )
+    results = [
+        {"id": uid, "name": name, "direction": direction}
+        for uid, name, direction in cur.fetchall()
+    ]
     cur.close()
     conn.close()
     return results
 
+
 def get_match_id_between(user1_id, user2_id):
     conn = connect_db()
     cur = conn.cursor()
-    cur.execute("""
+    cur.execute(
+        """
         SELECT id FROM matches
         WHERE requester_id = %s AND matched_user_id = %s
         LIMIT 1;
-    """, (user1_id, user2_id))
+    """,
+        (user1_id, user2_id),
+    )
     row = cur.fetchone()
 
     if not row:
-        cur.execute("""
+        cur.execute(
+            """
             SELECT id FROM matches
             WHERE requester_id = %s AND matched_user_id = %s
             LIMIT 1;
-        """, (user2_id, user1_id))
+        """,
+            (user2_id, user1_id),
+        )
         row = cur.fetchone()
 
     cur.close()
     conn.close()
     return row[0] if row else None
+
 
 # === Register Socket.IO Events ===
 def init_chat_events(socketio):
@@ -205,39 +244,52 @@ def init_chat_events(socketio):
     @socketio.on("connect")
     def handle_connect():
         from flask import session
+
         user_id = session.get("user_id")
         match_id = session.get("match_id")
         if not user_id or not match_id:
             return
         join_room(match_id)
-        send({"sender": "", "message": f"{get_display_name(user_id)} has entered the chat"}, to=match_id)
+        send(
+            {
+                "sender": "",
+                "message": f"{get_display_name(user_id)} has entered the chat",
+            },
+            to=match_id,
+        )
 
     @socketio.on("message")
     def handle_message(data):
         from flask import session
+
         user_id = session.get("user_id")
         match_id = session.get("match_id")
         if not user_id or not match_id:
             return
         insert_message(match_id, user_id, data["message"])
-        send({
-            "sender": get_display_name(user_id),
-            "message": data["message"]
-        }, to=match_id)
+        send(
+            {"sender": get_display_name(user_id), "message": data["message"]},
+            to=match_id,
+        )
 
     @socketio.on("disconnect")
     def handle_disconnect():
         from flask import session
+
         user_id = session.get("user_id")
         match_id = session.get("match_id")
         if not user_id or not match_id:
             return
         leave_room(match_id)
-        send({"sender": "", "message": f"{get_display_name(user_id)} has left the chat"}, to=match_id)
+        send(
+            {"sender": "", "message": f"{get_display_name(user_id)} has left the chat"},
+            to=match_id,
+        )
 
     @socketio.on("regenerate_starter")
     def handle_regenerate_starter(data):
         from flask import session
+
         user_id = session.get("user_id")
         match_id = session.get("match_id")
         other_user_id = data.get("other_user_id")
@@ -245,10 +297,11 @@ def init_chat_events(socketio):
         if not user_id or not match_id or not other_user_id:
             return
 
-        new_starter_message = generate_starter_message(user_id, other_user_id, match_id, save_to_db=True)
+        new_starter_message = generate_starter_message(
+            user_id, other_user_id, match_id, save_to_db=True
+        )
 
-        send({
-            "sender": "",
-            "message": new_starter_message,
-            "type": "starter"
-        }, to=match_id)
+        send(
+            {"sender": "", "message": new_starter_message, "type": "starter"},
+            to=match_id,
+        )

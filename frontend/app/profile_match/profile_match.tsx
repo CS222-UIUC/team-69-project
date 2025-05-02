@@ -155,10 +155,6 @@ export default function Profile_Match() {
       {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(dataToSend),
       }
     );
     if (match_response.status != 200) {
@@ -175,9 +171,9 @@ export default function Profile_Match() {
         <img src={logo} className="w-32" />
         <ul className="flex space-x-6 text-gray-700">
           <li>
-            <a href="#" id="link">
+            <Link to={user_data ? '/matches' : '/'} id="link">
               Home
-            </a>
+            </Link>
           </li>
           <li>
             <a href="#" id="link">
@@ -315,7 +311,11 @@ export default function Profile_Match() {
             <input type="checkbox" />
           </div> */}
 
-          <button className="find-btn mt-5 leading-none" type="submit">
+          <button
+            className="find-btn mt-5 leading-none"
+            type="submit"
+            disabled={!enabled}
+          >
             Find Matches!
           </button>
         </form>
