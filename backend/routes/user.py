@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
-from scripts.matchingalgo import search_user_by_name
+
+from scripts.search import search_user_by_name
 import zon
 
 from conn import conn

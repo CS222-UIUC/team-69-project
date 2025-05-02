@@ -11,5 +11,5 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  return <Profile_Match />;
+  return <Home_Pg />;
 }

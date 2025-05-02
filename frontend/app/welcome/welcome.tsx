@@ -76,13 +76,13 @@ export default function Welcome() {
           <Link to="/signup" id="link" className="text-gray-700 mr-4 ">
             Sign Up
           </Link>
-          <a
-            href="#"
+          <Link
+            to="/login"
             id="login_button"
             className="text-black px-4 py-2 rounded-lg"
           >
             Login
-          </a>
+          </Link>
         </div>
       </nav>
 
