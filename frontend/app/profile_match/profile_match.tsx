@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import logo from '../assets/logo.png';
 import './profile_match.css';
 import { z } from 'zod';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 const profileSchema = z.object({
   display_name: z.string(),
@@ -43,6 +43,8 @@ export default function Profile_Match() {
   const yearRef = useRef<HTMLInputElement | null>(null);
 
   const [enabled, setEnabled] = useState<boolean>(false);
+
+  const queryClient = useQueryClient();
 
   const addItem1 = () => {
     const trimmed = input1.trim();
@@ -165,6 +167,40 @@ export default function Profile_Match() {
     // return alert('Successfully updated profile');
   };
 
+  const handleSubmitSearchByName = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData);
+
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE}/search?name=${data['display_name']}`,
+      {
+        // name = request.args.get("name") // search
+        method: 'GET',
+        credentials: 'include',
+      }
+    );
+
+    if (response.status != 200) {
+      return alert(`Failed to find profile. ${await response.text()}`);
+    }
+
+    // alert(await response.json());
+
+    const matched_users: Match[] = await response.json();
+    console.log(matched_users);
+
+    queryClient.setQueriesData(
+      { queryKey: ['matches'] },
+      (oldData: any) => matched_users
+    );
+
+    // return alert('Successfully updated profile');
+  };
+
   return (
     <div className="profile_match">
       <nav className="flex justify-between items-center px-8 py-4 bg-white shadow-md">
@@ -181,9 +217,9 @@ export default function Profile_Match() {
             </a>
           </li>
           <li>
-            <a href="#" id="link">
+            <Link to={'/chat'} id="link">
               Messages
-            </a>
+            </Link>
           </li>
           <li>
             <a href="#" id="link">
@@ -202,130 +238,138 @@ export default function Profile_Match() {
       </nav>
 
       <main className="container text-black w-screen max-w-full">
-        <form className="profile-section" onSubmit={handleSubmit}>
-          <div className="profile-box flex items-center space-x-2">
-            <h2 className="h-full pl-2">
-              Your Profile
-              <button
-                className="fas fa-pen-square"
-                style={{ color: enabled ? 'black' : 'gray' }}
-                onClick={() => setEnabled(!enabled)}
-                type="button"
-              ></button>
-            </h2>
-          </div>
-          <img
-            className="profile-image"
-            src={`https://api.dicebear.com/7.x/bottts/svg?seed=user`}
-          ></img>
-          <input
-            className="inbox"
-            name="display_name"
-            type="text"
-            placeholder="Name:"
-            ref={displayNameRef}
-            disabled={!enabled}
-          />
-          <input
-            className="inbox"
-            name="major"
-            type="text"
-            placeholder="Major:"
-            ref={majorRef}
-            disabled={!enabled}
-          />
-          <input
-            className="inbox"
-            name="year"
-            type="text"
-            placeholder="Year:"
-            ref={yearRef}
-            disabled={!enabled}
-          />
-
-          <div className="input-with-icon">
+        <div className="flex flex-col justify-center gap-8 w-full">
+          <form className="profile-section" onSubmit={handleSubmit}>
+            <div className="profile-box flex items-center space-x-2">
+              <h2 className="h-full pl-2">
+                Your Profile
+                <button
+                  className="fas fa-pen-square"
+                  style={{ color: enabled ? 'black' : 'gray' }}
+                  onClick={() => setEnabled(!enabled)}
+                  type="button"
+                ></button>
+              </h2>
+            </div>
+            <img
+              className="profile-image"
+              src={`https://api.dicebear.com/7.x/bottts/svg?seed=user`}
+            ></img>
             <input
+              className="inbox"
+              name="display_name"
               type="text"
-              value={input1}
-              placeholder="Can tutor in..."
-              onChange={(e) => setInput1(e.target.value)}
-              onKeyDown={handleKeyPress1}
+              placeholder="Name:"
+              ref={displayNameRef}
               disabled={!enabled}
             />
-            <i className="fas fa-search"></i>
-            <ul>
-              {classesCanTutorIn.map((item, index) => (
-                <li
-                  key={index}
-                  style={{ backgroundColor: enabled ? '#f0f0f0' : '#d3d3d3' }}
-                >
-                  {item}
-                  <button
-                    onClick={() => deleteItem1(index)}
-                    className="delete-btn"
-                    aria-label={`Delete ${item}`}
-                    type="button"
-                    disabled={!enabled}
-                  >
-                    🗑️
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="input-with-icon">
             <input
+              className="inbox"
+              name="major"
               type="text"
-              value={input2}
-              placeholder="Needs help in..."
-              onChange={(e) => setInput2(e.target.value)}
-              onKeyDown={handleKeyPress2}
+              placeholder="Major:"
+              ref={majorRef}
               disabled={!enabled}
             />
-            <i className="fas fa-search"></i>
-            <ul>
-              {classesNeeded.map((item, index) => (
-                <li
-                  key={index}
-                  style={{ backgroundColor: enabled ? '#f0f0f0' : '#d3d3d3' }}
-                >
-                  {item}
-                  <button
-                    onClick={() => deleteItem2(index)}
-                    className="delete-btn"
-                    aria-label={`Delete ${item}`}
-                    disabled={!enabled}
+            <input
+              className="inbox"
+              name="year"
+              type="text"
+              placeholder="Year:"
+              ref={yearRef}
+              disabled={!enabled}
+            />
+
+            <div className="input-with-icon">
+              <input
+                type="text"
+                value={input1}
+                placeholder="Can tutor in..."
+                onChange={(e) => setInput1(e.target.value)}
+                onKeyDown={handleKeyPress1}
+                disabled={!enabled}
+              />
+              <i className="fas fa-search"></i>
+              <ul>
+                {classesCanTutorIn.map((item, index) => (
+                  <li
+                    key={index}
+                    style={{ backgroundColor: enabled ? '#f0f0f0' : '#d3d3d3' }}
                   >
-                    🗑️
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
+                    {item}
+                    <button
+                      onClick={() => deleteItem1(index)}
+                      className="delete-btn"
+                      aria-label={`Delete ${item}`}
+                      type="button"
+                      disabled={!enabled}
+                    >
+                      🗑️
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-          {/* <div className="toggle">
-            <label>
-              <b>List me as a one-sided tutor</b>
-            </label>
-            <input type="checkbox" />
-          </div> */}
+            <div className="input-with-icon">
+              <input
+                type="text"
+                value={input2}
+                placeholder="Needs help in..."
+                onChange={(e) => setInput2(e.target.value)}
+                onKeyDown={handleKeyPress2}
+                disabled={!enabled}
+              />
+              <i className="fas fa-search"></i>
+              <ul>
+                {classesNeeded.map((item, index) => (
+                  <li
+                    key={index}
+                    style={{ backgroundColor: enabled ? '#f0f0f0' : '#d3d3d3' }}
+                  >
+                    {item}
+                    <button
+                      onClick={() => deleteItem2(index)}
+                      className="delete-btn"
+                      aria-label={`Delete ${item}`}
+                      disabled={!enabled}
+                    >
+                      🗑️
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-          <button
-            className="find-btn mt-5 leading-none"
-            type="submit"
-            disabled={!enabled}
-          >
-            Find Matches!
-          </button>
-          <div>
+            {/* <div className="toggle">
+              <label>
+                <b>List me as a one-sided tutor</b>
+              </label>
+              <input type="checkbox" />
+            </div> */}
+
+            <button
+              className="find-btn mt-5 leading-none"
+              type="submit"
+              disabled={!enabled}
+            >
+              Find Matches!
+            </button>
+          </form>
+          <div className="px-60">
             <h2>OR</h2>
           </div>
-          <div className="search-by-name">
-            <input type="text" placeholder="Search by Name" />
-            <i className="fas fa-search"></i>
-          </div>
-        </form>
+          <form className="profile-section" onSubmit={handleSubmitSearchByName}>
+            <div className="search-by-name">
+              <input
+                type="text"
+                name="display_name"
+                placeholder="Search by Name"
+              />
+              <i className="fas fa-search"></i>
+            </div>
+          </form>
+        </div>
 
         <section className="matches-section">
           <h2>Your Matches</h2>

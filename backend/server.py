@@ -19,7 +19,7 @@ from conn import config, conn, DEV_MODE
 app = Flask(__name__)
 
 # === Socket.IO Setup ===
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", manage_session=True)
 
 # === Secret Key ===
 app.secret_key = (

@@ -1,4 +1,5 @@
 from datetime import datetime
+from rapidfuzz import fuzz
 from scripts.matchingalgo import (
     User,
     parse_pg_array,
@@ -25,7 +26,7 @@ def search_user_by_name(cursor, name, current_user):
 
     users = []
     for row in rows:
-        if row[0] == current_user.user_id:
+        if row[0] == current_user.id:
             continue  # skip self
 
         user = User(
@@ -50,24 +51,24 @@ def search_user_by_name(cursor, name, current_user):
 
         users.append(user)
 
-    # sorts the matching names based on match score
-    user_scores = []
-    for user in users:
-        if not (set(user.classes_can_tutor) & set(current_user.classes_needed)):
-            continue
-        if (
-            not (set(current_user.classes_can_tutor) & set(user.classes_needed))
-            and not user.show_as_backup
-        ):
-            continue
+    # # sorts the matching names based on match score TODO: add back if wanted
+    # user_scores = []
+    # for user in users:
+    #     if not (set(user.classes_can_tutor) & set(current_user.classes_needed)):
+    #         continue
+    #     if (
+    #         not (set(current_user.classes_can_tutor) & set(user.classes_needed))
+    #         and not user.show_as_backup
+    #     ):
+    #         continue
 
-        score, _ = get_match_score_and_tier(user, current_user)
-        user_scores.append((user, score))
+    #     score, _ = get_match_score_and_tier(user, current_user)
+    #     user_scores.append((user, score))
 
-    user_scores.sort(key=lambda x: -x[1])
+    # user_scores.sort(key=lambda x: -x[1])
 
-    sorted_users = [user for user, _ in user_scores]
-    return sorted_users
+    # sorted_users = [user for user, _ in user_scores]
+    return users
 
 
 def search_all_users_by_subject(cursor, conn, current_user_id, subject_query):

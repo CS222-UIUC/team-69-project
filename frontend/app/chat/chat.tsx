@@ -1,10 +1,69 @@
 import { Link } from 'react-router';
-import { useEffect } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import logo from '../assets/logo.png';
 import './chat.css';
 import { z } from 'zod';
+import { useQuery } from '@tanstack/react-query';
+import { socket } from '~/socket';
+
+interface Chat {
+  id: number;
+  name: string;
+  direction: string;
+}
+
+interface Message {
+  sender: string;
+  message: string;
+}
 
 export default function Chat_App() {
+  const {
+    data: chats,
+    error,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['chats'],
+    queryFn: async (): Promise<Chat[]> => {
+      return fetch(`${import.meta.env.VITE_API_BASE}/chat/chats`, {
+        credentials: 'include',
+      }).then((response) => response.json());
+    },
+    retry: 2,
+  });
+
+  const [selectedChat, setSelectedChat] = useState<Chat>({
+    id: -1,
+    name: '',
+    direction: '',
+  });
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  useEffect(() => {
+    function onConnect() {
+      console.log('connected');
+    }
+
+    function onDisconnect() {
+      console.log('disconnected');
+    }
+
+    function onMessage(msg: Message) {
+      setMessages((prev) => [...prev, msg]);
+    }
+
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+    socket.on('message', onMessage);
+
+    return () => {
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
+      socket.off('foo', onMessage);
+    };
+  }, []);
+
   useEffect(() => {
     const input = document.getElementById('message-input') as HTMLInputElement;
     const chatMessages = document.getElementById('chat-messages');
@@ -14,13 +73,8 @@ export default function Chat_App() {
         if (event.key === 'Enter' && input.value.trim() !== '') {
           event.preventDefault();
 
-          const newMessage = document.createElement('div');
-          newMessage.classList.add('message', 'sent');
-          newMessage.innerHTML = `<p>${input.value}</p>`;
-
-          chatMessages.appendChild(newMessage);
-
-          chatMessages.scrollTop = chatMessages.scrollHeight;
+          const message = input.value;
+          socket.emit('message', { message });
 
           input.value = '';
         }
@@ -28,19 +82,57 @@ export default function Chat_App() {
     }
   }, []);
 
+  useEffect(() => {
+    if (selectedChat.id == -1) return;
+
+    const fetchMessages = async () => {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE}/chat/messages`,
+        {
+          credentials: 'include',
+        }
+      );
+      if (response.status != 200) return;
+
+      const msgs = await response.json();
+      setMessages((prev) => msgs);
+    };
+
+    // fetchMessages(); // too slow
+  }, [selectedChat]);
+
+  const handleClick = async (chat: Chat) => {
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE}/chat/join?m=${chat.id}`,
+      {
+        method: 'POST',
+        credentials: 'include',
+      }
+    );
+
+    if (response.status != 200) {
+      alert('Failed to join chat!');
+    }
+
+    setMessages((prev) => []);
+
+    socket.disconnect();
+    socket.connect();
+
+    await new Promise((resolve) => setTimeout(resolve, 200));
+
+    setSelectedChat(chat);
+  };
+
   return (
-    <body>
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-      />
+    <div className="text-black">
       <nav className="flex justify-between items-center px-8 py-4 bg-white shadow-md">
         <img src={logo} className="w-32" />
         <ul className="flex space-x-6 text-gray-700">
           <li>
-            <a href="#" id="link">
+            <Link to={'/matches'} id="link">
               Home
-            </a>
+            </Link>
           </li>
           <li>
             <a href="#" id="link">
@@ -71,21 +163,47 @@ export default function Chat_App() {
       <div className="main">
         <aside className="chat-list">
           <h2>Chats</h2>
-          <input type="text" placeholder="Search"></input>
           <div className="chat-contacts">
-            <div className="contact">
-              <div className="avatar"></div>
-              <span>Adeetya Upadhyay</span>
-            </div>
+            {chats &&
+              chats.map((chat) => (
+                <Fragment key={chat.name}>
+                  <div className="contact" onClick={() => handleClick(chat)}>
+                    <img
+                      className="avatar"
+                      src={`https://api.dicebear.com/7.x/bottts/svg?seed=${chat.name}`}
+                    ></img>
+                    <span>{chat.name}</span>
+                  </div>
+                  <hr></hr>
+                </Fragment>
+              ))}
           </div>
         </aside>
 
         <section className="chat-window">
           <div className="chat-header">
-            <div className="avatar"></div>
-            <span>Adeetya Upadhyay</span>
+            {selectedChat.name && (
+              <img
+                className="avatar"
+                src={`https://api.dicebear.com/7.x/bottts/svg?seed=${selectedChat.name}`}
+              ></img>
+            )}
+            <span>{selectedChat.name}</span>
           </div>
-          <div className="chat-messages" id="chat-messages"></div>
+          <div className="chat-messages" id="chat-messages">
+            {selectedChat.id != -1 &&
+              messages.map((message) => (
+                <p
+                  className={
+                    message.sender == selectedChat.name
+                      ? 'message received'
+                      : 'message sent'
+                  }
+                >
+                  {message.message}
+                </p>
+              ))}
+          </div>
           <div className="chat-input">
             <input
               type="text"
@@ -95,6 +213,6 @@ export default function Chat_App() {
           </div>
         </section>
       </div>
-    </body>
+    </div>
   );
 }
