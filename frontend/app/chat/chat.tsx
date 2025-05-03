@@ -33,16 +33,20 @@ export default function Chat_App() {
     retry: 2,
   });
 
-  const [selectedChat, setSelectedChat] = useState<Chat>({id: -1, name: "", direction: ""});
+  const [selectedChat, setSelectedChat] = useState<Chat>({
+    id: -1,
+    name: '',
+    direction: '',
+  });
   const [messages, setMessages] = useState<Message[]>([]);
 
   useEffect(() => {
     function onConnect() {
-      console.log('connected')
+      console.log('connected');
     }
 
     function onDisconnect() {
-      console.log('disconnected')
+      console.log('disconnected');
     }
 
     function onMessage(msg: Message) {
@@ -57,8 +61,8 @@ export default function Chat_App() {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
       socket.off('foo', onMessage);
-    }
-  }, [])
+    };
+  }, []);
 
   useEffect(() => {
     const input = document.getElementById('message-input') as HTMLInputElement;
@@ -70,50 +74,44 @@ export default function Chat_App() {
           event.preventDefault();
 
           const message = input.value;
-          socket.emit("message", { message });
-
-          console.log(message);
+          socket.emit('message', { message });
 
           input.value = '';
-
-          // const newMessage = document.createElement('div');
-          // newMessage.classList.add('message', 'sent');
-          // newMessage.innerHTML = `<p>${input.value}</p>`;
-
-          // chatMessages.appendChild(newMessage);
-
-          // chatMessages.scrollTop = chatMessages.scrollHeight;
-
-          // input.value = '';
         }
       });
     }
   }, []);
 
   useEffect(() => {
-    if(selectedChat.id == -1) return;
+    if (selectedChat.id == -1) return;
 
     const fetchMessages = async () => {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE}/chat/messages`, {
-        credentials: 'include',
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE}/chat/messages`,
+        {
+          credentials: 'include',
+        }
+      );
       if (response.status != 200) return;
 
       const msgs = await response.json();
       setMessages((prev) => msgs);
-    }
+    };
 
     // fetchMessages(); // too slow
-  }, [selectedChat])
+  }, [selectedChat]);
 
   const handleClick = async (chat: Chat) => {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE}/chat/join?m=${chat.id}`, {
-      method: 'POST',
-      credentials: 'include',
-    });
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE}/chat/join?m=${chat.id}`,
+      {
+        method: 'POST',
+        credentials: 'include',
+      }
+    );
 
     if (response.status != 200) {
-      alert("Failed to join chat!")
+      alert('Failed to join chat!');
     }
 
     setMessages((prev) => []);
@@ -121,12 +119,13 @@ export default function Chat_App() {
     socket.disconnect();
     socket.connect();
 
+    await new Promise((resolve) => setTimeout(resolve, 200));
 
     setSelectedChat(chat);
-  }
+  };
 
   return (
-    <div className='text-black'>
+    <div className="text-black">
       <nav className="flex justify-between items-center px-8 py-4 bg-white shadow-md">
         <img src={logo} className="w-32" />
         <ul className="flex space-x-6 text-gray-700">
@@ -165,27 +164,45 @@ export default function Chat_App() {
         <aside className="chat-list">
           <h2>Chats</h2>
           <div className="chat-contacts">
-            {chats && chats.map(chat => (
-              <Fragment key={chat.name}>
-                <div className="contact" onClick={() => handleClick(chat)}>
-                  <img className="avatar" src={`https://api.dicebear.com/7.x/bottts/svg?seed=${chat.name}`}></img>
-                  <span>{chat.name}</span>
-                </div>
-                <hr></hr>
-              </Fragment>
-            ))}
+            {chats &&
+              chats.map((chat) => (
+                <Fragment key={chat.name}>
+                  <div className="contact" onClick={() => handleClick(chat)}>
+                    <img
+                      className="avatar"
+                      src={`https://api.dicebear.com/7.x/bottts/svg?seed=${chat.name}`}
+                    ></img>
+                    <span>{chat.name}</span>
+                  </div>
+                  <hr></hr>
+                </Fragment>
+              ))}
           </div>
         </aside>
 
         <section className="chat-window">
           <div className="chat-header">
-            {selectedChat.name && <img className="avatar" src={`https://api.dicebear.com/7.x/bottts/svg?seed=${selectedChat.name}`}></img>}
+            {selectedChat.name && (
+              <img
+                className="avatar"
+                src={`https://api.dicebear.com/7.x/bottts/svg?seed=${selectedChat.name}`}
+              ></img>
+            )}
             <span>{selectedChat.name}</span>
           </div>
           <div className="chat-messages" id="chat-messages">
-            {selectedChat.id != -1 && messages.map(message => (
-              <p className={message.sender == selectedChat.name ? "message received" : "message sent"}>{message.message}</p>
-            ))}
+            {selectedChat.id != -1 &&
+              messages.map((message) => (
+                <p
+                  className={
+                    message.sender == selectedChat.name
+                      ? 'message received'
+                      : 'message sent'
+                  }
+                >
+                  {message.message}
+                </p>
+              ))}
           </div>
           <div className="chat-input">
             <input

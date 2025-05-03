@@ -79,7 +79,8 @@ h2 {
   cursor: pointer;
 }
 
-.contact .avatar, .chat-header .avatar {
+.contact .avatar,
+.chat-header .avatar {
   width: 40px;
   height: 40px;
   background-color: #ddd;
