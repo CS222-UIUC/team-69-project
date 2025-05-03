@@ -57,9 +57,9 @@ export default function Welcome() {
             </a>
           </li>
           <li>
-            <a href="#" id="link">
-              Messages
-            </a>
+            <Link to="/chat" id="link">
+              Home
+            </Link>
           </li>
           <li>
             <a href="#" id="link">

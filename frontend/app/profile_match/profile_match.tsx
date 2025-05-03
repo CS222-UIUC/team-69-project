@@ -238,8 +238,8 @@ export default function Profile_Match() {
       </nav>
 
       <main className="container text-black w-screen max-w-full">
-        <div className="flex flex-col justify-center gap-8 w-full">
-          <form className="profile-section" onSubmit={handleSubmit}>
+        <div>
+          <form className="profile-section w-full" onSubmit={handleSubmit}>
             <div className="profile-box flex items-center space-x-2">
               <h2 className="h-full pl-2">
                 Your Profile
@@ -279,7 +279,6 @@ export default function Profile_Match() {
               ref={yearRef}
               disabled={!enabled}
             />
-
             <div className="input-with-icon">
               <input
                 type="text"
@@ -310,7 +309,6 @@ export default function Profile_Match() {
                 ))}
               </ul>
             </div>
-
             <div className="input-with-icon">
               <input
                 type="text"
@@ -340,14 +338,12 @@ export default function Profile_Match() {
                 ))}
               </ul>
             </div>
-
             {/* <div className="toggle">
-              <label>
-                <b>List me as a one-sided tutor</b>
-              </label>
-              <input type="checkbox" />
-            </div> */}
-
+                <label>
+                  <b>List me as a one-sided tutor</b>
+                </label>
+                <input type="checkbox" />
+              </div> */}
             <button
               className="find-btn mt-5 leading-none"
               type="submit"
@@ -356,10 +352,11 @@ export default function Profile_Match() {
               Find Matches!
             </button>
           </form>
-          <div className="px-60">
-            <h2>OR</h2>
-          </div>
-          <form className="profile-section" onSubmit={handleSubmitSearchByName}>
+          <h2 className="text-center text-2xl py-4">OR</h2>
+          <form
+            className="profile-section w-full"
+            onSubmit={handleSubmitSearchByName}
+          >
             <div className="search-by-name">
               <input
                 type="text"

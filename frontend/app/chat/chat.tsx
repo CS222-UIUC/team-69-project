@@ -140,9 +140,9 @@ export default function Chat_App() {
             </a>
           </li>
           <li>
-            <a href="#" id="link">
-              Messages
-            </a>
+            <Link to={'/chat'} id="link">
+              Home
+            </Link>
           </li>
           <li>
             <a href="#" id="link">
@@ -156,7 +156,7 @@ export default function Chat_App() {
           </li>
         </ul>
         <div className="user-dropdown">
-          Username <i className="fas fa-caret-down"></i>
+          {/* Username <i className="fas fa-caret-down"></i> */}
         </div>
       </nav>
 
