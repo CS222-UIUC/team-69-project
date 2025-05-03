@@ -9,6 +9,7 @@ from scripts.matchingalgo import parse_pg_array
 
 from conn import config
 
+
 # === Connect to DB ===
 def connect_db():
     # === Environment Configuration ===
@@ -261,7 +262,7 @@ def init_chat_events(socketio):
         if not user_id or not match_id:
             return
         insert_message(match_id, user_id, data["message"])
-        
+
         send(
             {"sender": get_display_name(user_id), "message": data["message"]},
             to=match_id,

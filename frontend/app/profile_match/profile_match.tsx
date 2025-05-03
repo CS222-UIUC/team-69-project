@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useEffect, useRef, useState } from 'react';
 import logo from '../assets/logo.png';
 import './profile_match.css';
@@ -14,6 +14,7 @@ const profileSchema = z.object({
 const valid_years = ['freshman', 'sophomore', 'junior', 'senior'];
 
 interface Match {
+  id: number;
   display_name: string;
   classes_can_tutor: string[];
   classes_needed: string[];
@@ -45,6 +46,7 @@ export default function Profile_Match() {
   const [enabled, setEnabled] = useState<boolean>(false);
 
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const addItem1 = () => {
     const trimmed = input1.trim();
@@ -405,7 +407,14 @@ export default function Profile_Match() {
                         <strong>Rating:</strong> {match.rating}
                       </p>
                     </div>
-                    <button className="chat-btn">Chat Now!</button>
+                    <button
+                      className="chat-btn"
+                      onClick={() => {
+                        navigate(`/chat?id=${match.id}`);
+                      }}
+                    >
+                      Chat Now!
+                    </button>
                   </div>
                 );
               })}

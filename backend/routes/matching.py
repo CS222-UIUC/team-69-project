@@ -63,9 +63,12 @@ def match_all():
 
 
 def get_match_object(match_slice):
-    display_name, classes_can_tutor, classes_needed, major, year, rating = match_slice
+    id, display_name, classes_can_tutor, classes_needed, major, year, rating = (
+        match_slice
+    )
 
     return {
+        "id": id,
         "display_name": display_name,
         "classes_can_tutor": classes_can_tutor,
         "classes_needed": classes_needed,
@@ -121,9 +124,9 @@ def get_user_matches():
         requester_id = match[0]
 
         if requester_id == user_id:
-            output.append(get_match_object(match[8:14]))
+            output.append(get_match_object(match[7:14]))
         else:
-            output.append(get_match_object(match[1:7]))
+            output.append(get_match_object(match[0:7]))
 
     return jsonify(output)
 

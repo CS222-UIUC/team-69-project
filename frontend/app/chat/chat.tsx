@@ -60,27 +60,36 @@ export default function Chat_App() {
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
-      socket.off('foo', onMessage);
+      socket.off('message', onMessage);
     };
   }, []);
 
   useEffect(() => {
-    const input = document.getElementById('message-input') as HTMLInputElement;
-    const chatMessages = document.getElementById('chat-messages');
+    const user_id = new URLSearchParams(window.location.search).get('id');
+    if (user_id == null) return;
+    window.history.replaceState(
+      {},
+      '_',
+      window.location.origin + window.location.pathname
+    ); // react router framework mode is very confusing
 
-    if (input && chatMessages) {
-      input.addEventListener('keypress', function (event) {
-        if (event.key === 'Enter' && input.value.trim() !== '') {
-          event.preventDefault();
+    const chat = chats?.find((chat) => chat.id == parseInt(user_id));
+    if (!chat) return;
 
-          const message = input.value;
-          socket.emit('message', { message });
+    joinChat(chat);
+  }, [chats]);
 
-          input.value = '';
-        }
-      });
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const input = event.target as HTMLInputElement;
+    if (event.key === 'Enter' && input.value.trim() !== '') {
+      event.preventDefault();
+
+      const message = input.value;
+      socket.emit('message', { message });
+
+      input.value = '';
     }
-  }, []);
+  };
 
   useEffect(() => {
     if (selectedChat.id == -1) return;
@@ -101,7 +110,7 @@ export default function Chat_App() {
     // fetchMessages(); // too slow
   }, [selectedChat]);
 
-  const handleClick = async (chat: Chat) => {
+  const joinChat = async (chat: Chat) => {
     const response = await fetch(
       `${import.meta.env.VITE_API_BASE}/chat/join?m=${chat.id}`,
       {
@@ -167,7 +176,7 @@ export default function Chat_App() {
             {chats &&
               chats.map((chat) => (
                 <Fragment key={chat.name}>
-                  <div className="contact" onClick={() => handleClick(chat)}>
+                  <div className="contact" onClick={() => joinChat(chat)}>
                     <img
                       className="avatar"
                       src={`https://api.dicebear.com/7.x/bottts/svg?seed=${chat.name}`}
@@ -192,13 +201,14 @@ export default function Chat_App() {
           </div>
           <div className="chat-messages" id="chat-messages">
             {selectedChat.id != -1 &&
-              messages.map((message) => (
+              messages.map((message, i) => (
                 <p
                   className={
                     message.sender == selectedChat.name
                       ? 'message received'
                       : 'message sent'
                   }
+                  key={message.sender + i}
                 >
                   {message.message}
                 </p>
@@ -209,6 +219,7 @@ export default function Chat_App() {
               type="text"
               id="message-input"
               placeholder="Type a message"
+              onKeyUp={handleKeyPress}
             ></input>
           </div>
         </section>
