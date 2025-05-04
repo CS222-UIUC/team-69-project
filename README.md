@@ -80,7 +80,7 @@ Users can create accounts or log in using a simple interface connected to Flask 
 - Cameron connected backend logic and session handling  
 
 ### Home Page  
-The dashboard where users see potential tutors, search by class, and filter matches. It shows basic user info and class relevance scores.
+The welcome page, where potential users understand how our platform operates. It shows how to use the platform, basic top user info, and a Call To Action.
 
 - Designed in Figma by Aryaa and Adeetya  
 - React implementation by Yash  
@@ -146,7 +146,7 @@ All members contributed to planning, regular check-ins, code reviews, and final 
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+This project is licensed under the MIT License.
 
 ---
 
