@@ -41,7 +41,7 @@ export default function Home_Pg() {
             </li>
             <li>
               <Link to="/chat" id="link">
-                Home
+                Messages
               </Link>
             </li>
             <li>
