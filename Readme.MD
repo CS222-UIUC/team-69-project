@@ -1,4 +1,3 @@
-
 # Tutorswap
 
 [![Contributors][contributors-shield]][contributors-url]
@@ -51,9 +50,7 @@ Key features include:
 </p>
 
 
-<p align="center">
-  <img src="https://github.com/CS222-UIUC/team-69-project/blob/main/backend/tech-arch.jpeg?raw=true" alt="Tutorswap Technical Architecture" width="600"/>
-</p>
+![Tutorswap Technical Architecture](https://github.com/CS222-UIUC/team-69-project/blob/main/backend/tech-arch.jpeg?raw=true)
 
 
 
