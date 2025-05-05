@@ -77,17 +77,19 @@ Users can create accounts or log in using a simple interface connected to Flask 
 - Adeetya created the login page UI  
 - Aryaa designed the signup page in Figma  
 - Yash implemented both flows in React  
-- Cameron connected backend logic and session handling  
+- Cameron connected backend logic and session handling, adding support for Google Oauth 2.0 and limiting access to @illinois.edu emails
+
+
 
 ### Home Page  
 The welcome page, where potential users understand how our platform operates. It shows how to use the platform, basic top user info, and a Call To Action.
 
 - Designed in Figma by Aryaa and Adeetya  
 - React implementation by Yash  
-- Backend data connection by Cameron  
+- Fixed visual bugs by Cameron  
 
 ### Matching Page  
-Displays top matches based on course overlap, user rating, major similarity, and recent activity. The logic includes scoring and ranking, with fuzzy search and filters.
+Displays top matches based on course overlap, user rating, major similarity, and recent activity. The logic includes scoring and ranking, with fuzzy search.
 
 - Matching algorithm written by Adeetya  
 - Backend search optimization and GIN indexing by Aryaa  
