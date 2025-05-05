@@ -150,7 +150,7 @@ export default function Chat_App() {
           </li>
           <li>
             <Link to={'/chat'} id="link">
-              Home
+              Messages
             </Link>
           </li>
           <li>

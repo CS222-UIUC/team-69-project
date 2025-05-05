@@ -59,7 +59,7 @@ export default function Signup() {
           </li>
           <li>
             <Link to="/chat" id="link">
-              Home
+              Messages
             </Link>
           </li>
           <li>
