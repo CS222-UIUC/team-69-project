@@ -23,7 +23,7 @@ Key features include:
 - Login and profile creation
 - Tutor matching based on course overlap, rating, and major
 - Real-time messaging with matched users
-- Course- and user-based search
+- Course-based and user-based search
 - Class-specific rating and review system
 - AI-powered starter messages for chat
 
