@@ -1,16 +1,16 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 <div class="chat-wrapper">
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="search-bar">
-      <input type="text" placeholder="Search" id="search-input">
+      <input type="text" placeholder="Search" id="search-input" />
     </div>
 
     <div class="user-list">
       {% for u in users %}
-        <a class="user-item" href="/?u={{ session['user_id'] }}&m={{ u.id }}">{{ u.name }}</a>
+      <a class="user-item" href="/?u={{ session['user_id'] }}&m={{ u.id }}"
+        >{{ u.name }}</a
+      >
       {% endfor %}
     </div>
   </div>
@@ -20,17 +20,15 @@
     <div class="chat-header">{{ user }}</div>
 
     <ul id="messages" class="chat-body">
-      {% for msg in messages %}
-        {% if msg.sender %}
-          <li class="{{ 'self' if msg.sender == user else 'other' }}">
-            {{ msg.message }}
-          </li>
-        {% endif %}
-      {% endfor %}
+      {% for msg in messages %} {% if msg.sender %}
+      <li class="{{ 'self' if msg.sender == user else 'other' }}">
+        {{ msg.message }}
+      </li>
+      {% endif %} {% endfor %}
     </ul>
 
     <div class="chat-input-area">
-      <input type="text" id="message-input" placeholder="Type a message...">
+      <input type="text" id="message-input" placeholder="Type a message..." />
       <button onclick="sendMessage()">Send</button>
     </div>
   </div>
