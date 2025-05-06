@@ -108,10 +108,11 @@ def search_users():
     for user in users:
         result.append(
             {
-                "user_id": user.user_id,
+                "id": user.user_id,
                 "display_name": user.display_name,
                 "major": user.major,
                 "year": user.year,
+                "rating": user.rating,
                 "classes_can_tutor": user.classes_can_tutor,
                 "classes_needed": user.classes_needed,
             }

@@ -184,7 +184,7 @@ export default function Chat_App() {
                   <div className="contact" onClick={() => joinChat(chat)}>
                     <img
                       className="avatar"
-                      src={`https://api.dicebear.com/7.x/bottts/svg?seed=${chat.name}`}
+                      src={`https://api.dicebear.com/7.x/bottts/svg?seed=${chat.id}`}
                     ></img>
                     <span>{chat.name}</span>
                   </div>
@@ -200,7 +200,7 @@ export default function Chat_App() {
               {selectedChat.name && (
                 <img
                   className="avatar"
-                  src={`https://api.dicebear.com/7.x/bottts/svg?seed=${selectedChat.name}`}
+                  src={`https://api.dicebear.com/7.x/bottts/svg?seed=${selectedChat.id}`}
                 ></img>
               )}
               <span>{selectedChat.name}</span>

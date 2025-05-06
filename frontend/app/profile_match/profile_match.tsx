@@ -384,7 +384,7 @@ export default function Profile_Match() {
                   >
                     <img
                       className="card-img"
-                      src={`https://api.dicebear.com/7.x/bottts/svg?seed=${match.display_name}`}
+                      src={`https://api.dicebear.com/7.x/bottts/svg?seed=${match.id}`}
                     ></img>
                     <div>
                       <h3>{match.display_name}</h3>
@@ -399,7 +399,7 @@ export default function Profile_Match() {
                       <p>
                         <strong>Major:</strong> {match.major}
                       </p>
-                      <p>
+                      <p className="capitalize">
                         <strong>Year:</strong> {match.year}
                       </p>
                       <p>

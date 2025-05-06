@@ -183,7 +183,7 @@ export default function Home_Pg() {
             </div>
           </div>
         </section>
-        <section className="section search-section">
+        {/* <section className="section search-section">
           <h1>Find a Tutor For</h1>
           <div className="search-bar">
             <input type="text" placeholder="What would you like to learn?" />
@@ -191,7 +191,7 @@ export default function Home_Pg() {
               <i className="fas fa-search"></i>
             </button>
           </div>
-        </section>
+        </section> */}
         <footer className="bg-gray-100 py-6 text-center text-gray-600 text-sm">
           <div className="mt-2 flex justify-center space-x-4">
             <a href="#" className="hover:text-blue-500">
