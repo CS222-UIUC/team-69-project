@@ -67,14 +67,15 @@ export default function Chat_App() {
   useEffect(() => {
     const user_id = new URLSearchParams(window.location.search).get('id');
     if (user_id == null) return;
+
+    const chat = chats?.find((chat) => chat.id == parseInt(user_id));
+    if (!chat) return;
+
     window.history.replaceState(
       {},
       '_',
       window.location.origin + window.location.pathname
     ); // react router framework mode is very confusing
-
-    const chat = chats?.find((chat) => chat.id == parseInt(user_id));
-    if (!chat) return;
 
     joinChat(chat);
   }, [chats]);
