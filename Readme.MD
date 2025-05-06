@@ -114,7 +114,7 @@ Enables real-time messaging between matched users. Messages are stored by match 
     ```bash
     cd frontend
     npm install --force
-    npm start
+    npm run dev
     ```
 
 3. **Backend setup**
@@ -123,7 +123,7 @@ Enables real-time messaging between matched users. Messages are stored by match 
     python3 -m venv venv
     source venv/bin/activate
     pip install -r requirements.txt
-    flask run
+    python3 server.py
     ```
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
