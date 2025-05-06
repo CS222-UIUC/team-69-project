@@ -1,10 +1,11 @@
+import openai
 from flask_socketio import join_room, leave_room, send
 from datetime import datetime
 from psycopg2 import connect
 from dotenv import dotenv_values
 from flask import session
 import os
-
+from dotenv import load_dotenv
 from scripts.matchingalgo import parse_pg_array
 
 from conn import config
@@ -22,18 +23,23 @@ def connect_db():
         port=config["POSTGRES_DATABASE_PORT"],
     )
 
-
-import openai
+from openai import OpenAI
 from datetime import datetime
 
-openai.api_key = config.get("OPENAI_API_KEY") or ""  # you aint getting this hehe
+load_dotenv(dotenv_path=".env.development.local")
 
+# Set up OpenAI client with the key from env
+api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=api_key)
+
+
+
+client = OpenAI()
 
 def generate_starter_message(user1_id, user2_id, match_id, save_to_db=True):
     conn = connect_db()
     cur = conn.cursor()
 
-    # Fetch user1 and user2 info
     cur.execute(
         """
         SELECT id, display_name, major, year, classes_can_tutor, classes_needed
@@ -59,12 +65,10 @@ def generate_starter_message(user1_id, user2_id, match_id, save_to_db=True):
     user2_classes = set(parse_pg_array(user2[4]) + parse_pg_array(user2[5]))
     shared_classes = list(user1_classes & user2_classes)
 
-    shared_major = user1[2] == user2[2] and user1[2]  # major
-    shared_year = user1[3] == user2[3] and user1[3]  # year
+    shared_major = user1[2] == user2[2] and user1[2]
+    shared_year = user1[3] == user2[3] and user1[3]
 
-    # Prompt Construction
     prompt_parts = []
-
     if shared_classes:
         prompt_parts.append(
             f"You both are connected through classes like {', '.join(shared_classes)}."
@@ -94,8 +98,8 @@ Keep the tone friendly and respectful.
 """
 
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
+        response = client.chat.completions.create(
+            model="gpt-4-turbo",
             messages=[
                 {
                     "role": "system",
@@ -107,10 +111,9 @@ Keep the tone friendly and respectful.
             max_tokens=100,
         )
 
-        starter_message = response["choices"][0]["message"]["content"].strip()
+        starter_message = response.choices[0].message.content.strip()
 
         if save_to_db and starter_message:
-            # Save the starter message into the chat_messages table
             cur.execute(
                 """
                 INSERT INTO chat_messages (match_id, sender_id, message_text, created_at)
@@ -130,7 +133,6 @@ Keep the tone friendly and respectful.
         cur.close()
         conn.close()
         return f"Hi, I'm {user1_first_name}! Excited to connect with you!"
-
 
 # === DB Utilities ===
 def get_display_name(user_id):
