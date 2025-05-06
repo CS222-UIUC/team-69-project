@@ -96,6 +96,7 @@ Displays top matches based on course overlap, user rating, major similarity, and
 ### Chat Page  
 Enables real-time messaging between matched users. Messages are stored by match ID and loaded dynamically. Also includes AI-generated starter prompts using GPT.
 
+- Frontend Figma design by Aryaa
 - Backend logic and AI prompt generation by Adeetya  
 - Chat UI built by Yash in React  
 - Server connection and SocketIO setup by Cameron  
