@@ -50,7 +50,7 @@ Key features include:
 </p>
 
 
-![Tutorswap Technical Architecture](https://github.com/CS222-UIUC/team-69-project/blob/main/backend/tech-arch.jpeg)
+![Tutorswap Technical Arch](https://github.com/CS222-UIUC/team-69-project/blob/main/backend/tech-arch.jpeg)
 
 
 
