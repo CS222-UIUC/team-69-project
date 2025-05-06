@@ -30,6 +30,7 @@ export default function Signup() {
     const response = await fetch(`${import.meta.env.VITE_API_BASE}/signup`, {
       method: 'POST',
       body: JSON.stringify(verifiedData),
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },

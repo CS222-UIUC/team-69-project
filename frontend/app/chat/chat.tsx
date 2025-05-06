@@ -104,10 +104,10 @@ export default function Chat_App() {
       if (response.status != 200) return;
 
       const msgs = await response.json();
-      setMessages((prev) => msgs);
+      setMessages((prev) => [...msgs, ...prev]);
     };
 
-    // fetchMessages(); // too slow
+    fetchMessages(); // too slow
   }, [selectedChat]);
 
   const joinChat = async (chat: Chat) => {
@@ -131,6 +131,10 @@ export default function Chat_App() {
     await new Promise((resolve) => setTimeout(resolve, 200));
 
     setSelectedChat(chat);
+  };
+
+  const useAI = () => {
+    socket.emit('regenerate_starter', { other_user_id: selectedChat.id });
   };
 
   return (
@@ -190,21 +194,31 @@ export default function Chat_App() {
         </aside>
 
         <section className="chat-window">
-          <div className="chat-header">
-            {selectedChat.name && (
-              <img
-                className="avatar"
-                src={`https://api.dicebear.com/7.x/bottts/svg?seed=${selectedChat.name}`}
-              ></img>
+          <div className="chat-header flex items-center justify-between">
+            <div className="flex items-center">
+              {selectedChat.name && (
+                <img
+                  className="avatar"
+                  src={`https://api.dicebear.com/7.x/bottts/svg?seed=${selectedChat.name}`}
+                ></img>
+              )}
+              <span>{selectedChat.name}</span>
+            </div>
+
+            {selectedChat.id != -1 && (
+              <button
+                className="fa-solid fa-wand-magic-sparkles mr-4 text-[#1a4849] text-2xl cursor-pointer"
+                onClick={useAI}
+              ></button>
             )}
-            <span>{selectedChat.name}</span>
           </div>
           <div className="chat-messages" id="chat-messages">
             {selectedChat.id != -1 &&
               messages.map((message, i) => (
                 <p
                   className={
-                    message.sender == selectedChat.name
+                    message.sender == selectedChat.name ||
+                    message.sender == 'other'
                       ? 'message received'
                       : 'message sent'
                   }

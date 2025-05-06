@@ -8,20 +8,22 @@ import os
 from dotenv import load_dotenv
 from scripts.matchingalgo import parse_pg_array
 
-from conn import config
+from conn import config, conn
 
 
 # === Connect to DB ===
 def connect_db():
     # === Environment Configuration ===
 
-    return connect(
-        database=config["POSTGRES_DATABASE_NAME"],
-        host=config["POSTGRES_DATABASE_HOST"],
-        user=config["POSTGRES_DATABASE_USER"],
-        password=config["POSTGRES_DATABASE_PASSWORD"],
-        port=config["POSTGRES_DATABASE_PORT"],
-    )
+    # return connect(
+    #     database=config["POSTGRES_DATABASE_NAME"],
+    #     host=config["POSTGRES_DATABASE_HOST"],
+    #     user=config["POSTGRES_DATABASE_USER"],
+    #     password=config["POSTGRES_DATABASE_PASSWORD"],
+    #     port=config["POSTGRES_DATABASE_PORT"],
+    # )
+    return conn
+
 
 from openai import OpenAI
 from datetime import datetime
@@ -33,8 +35,8 @@ api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=api_key)
 
 
-
 client = OpenAI()
+
 
 def generate_starter_message(user1_id, user2_id, match_id, save_to_db=True):
     conn = connect_db()
@@ -51,8 +53,7 @@ def generate_starter_message(user1_id, user2_id, match_id, save_to_db=True):
     users = cur.fetchall()
     if len(users) != 2:
         cur.close()
-        conn.close()
-        return "Hi there! Excited to connect with you!"
+        return "other", "Hi there! Excited to connect with you!"
 
     user1, user2 = users
     user1_display_name = user1[1]
@@ -124,15 +125,17 @@ Keep the tone friendly and respectful.
             conn.commit()
 
         cur.close()
-        conn.close()
 
-        return starter_message
+        return user1_display_name, starter_message
 
     except Exception as e:
         print(f"ChatGPT Error: {e}")
         cur.close()
-        conn.close()
-        return f"Hi, I'm {user1_first_name}! Excited to connect with you!"
+        return (
+            user1_display_name,
+            f"Hi, I'm {user1_first_name}! Excited to connect with you!",
+        )
+
 
 # === DB Utilities ===
 def get_display_name(user_id):
@@ -141,7 +144,6 @@ def get_display_name(user_id):
     cur.execute("SELECT display_name FROM users WHERE id = %s;", (user_id,))
     row = cur.fetchone()
     cur.close()
-    conn.close()
     return row[0] if row else f"User {user_id}"
 
 
@@ -159,7 +161,6 @@ def fetch_messages(match_id):
     )
     messages = cur.fetchall()
     cur.close()
-    conn.close()
     return [
         {"sender": get_display_name(sender), "message": msg}
         for sender, msg, _ in messages
@@ -178,7 +179,6 @@ def insert_message(match_id, sender_id, text):
     )
     conn.commit()
     cur.close()
-    conn.close()
 
 
 def get_matches_for_user(user_id):
@@ -205,7 +205,6 @@ def get_matches_for_user(user_id):
         for uid, name, direction in cur.fetchall()
     ]
     cur.close()
-    conn.close()
     return results
 
 
@@ -234,7 +233,6 @@ def get_match_id_between(user1_id, user2_id):
         row = cur.fetchone()
 
     cur.close()
-    conn.close()
     return row[0] if row else None
 
 
@@ -277,10 +275,10 @@ def init_chat_events(socketio):
         if not user_id or not match_id:
             return
         leave_room(match_id)
-        send(
-            {"sender": "", "message": f"{get_display_name(user_id)} has left the chat"},
-            to=match_id,
-        )
+        # send(
+        #     {"sender": "", "message": f"{get_display_name(user_id)} has left the chat"},
+        #     to=match_id,
+        # )
 
     @socketio.on("regenerate_starter")
     def handle_regenerate_starter(data):
@@ -291,11 +289,11 @@ def init_chat_events(socketio):
         if not user_id or not match_id or not other_user_id:
             return
 
-        new_starter_message = generate_starter_message(
+        sender, new_starter_message = generate_starter_message(
             user_id, other_user_id, match_id, save_to_db=True
         )
 
         send(
-            {"sender": "", "message": new_starter_message, "type": "starter"},
+            {"sender": sender, "message": new_starter_message, "type": "starter"},
             to=match_id,
         )

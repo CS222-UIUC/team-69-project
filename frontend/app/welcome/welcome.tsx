@@ -29,6 +29,7 @@ export default function Welcome() {
     const response = await fetch(`${import.meta.env.VITE_API_BASE}/login`, {
       method: 'POST',
       body: JSON.stringify(verifiedData),
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },

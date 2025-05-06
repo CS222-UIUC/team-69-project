@@ -193,7 +193,6 @@ export default function Profile_Match() {
     // alert(await response.json());
 
     const matched_users: Match[] = await response.json();
-    console.log(matched_users);
 
     queryClient.setQueriesData(
       { queryKey: ['matches'] },
@@ -274,7 +273,7 @@ export default function Profile_Match() {
               disabled={!enabled}
             />
             <input
-              className="inbox"
+              className="inbox capitalize"
               name="year"
               type="text"
               placeholder="Year:"
