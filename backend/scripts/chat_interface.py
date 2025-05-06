@@ -118,9 +118,9 @@ Keep the tone friendly and respectful.
             cur.execute(
                 """
                 INSERT INTO chat_messages (match_id, sender_id, message_text, created_at)
-                VALUES (%s, NULL, %s, %s);
+                VALUES (%s, %s, %s, %s);
             """,
-                (match_id, starter_message, datetime.now()),
+                (match_id, user1[0], starter_message, datetime.now()),
             )
             conn.commit()
 
